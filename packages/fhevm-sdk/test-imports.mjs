@@ -78,6 +78,14 @@ const expectedFiles = [
   'react/hooks/useEncrypt.d.ts',
   'react/hooks/useDecrypt.js',
   'react/hooks/useDecrypt.d.ts',
+  'vue/index.js',
+  'vue/index.d.ts',
+  'vue/composables/useFhevm.js',
+  'vue/composables/useFhevm.d.ts',
+  'vue/composables/useEncrypt.js',
+  'vue/composables/useEncrypt.d.ts',
+  'vue/composables/useDecrypt.js',
+  'vue/composables/useDecrypt.d.ts',
   'storage/index.js',
   'storage/index.d.ts',
   'fhevmTypes.js',
@@ -113,6 +121,7 @@ if (allFilesExist) {
 
   logger.info('\n💡 Usage:');
   logger.info('   import { useFhevm, useEncrypt, useDecrypt } from "@fhevm-sdk/react"');
+  logger.info('   import { useFhevm, useEncrypt, useDecrypt } from "@fhevm-sdk/vue"');
   logger.info('   import { createFhevmClient } from "@fhevm-sdk/core"');
 
   logger.warn('\n⚠️  Note: Direct Node.js ESM imports require a bundler.');
