@@ -11,6 +11,7 @@
 - **🎯 10 Lines of Code** - Get started with FHEVM in just 10 lines
 - **🔄 Framework Agnostic** - Core SDK works with any JavaScript framework
 - **⚛️ React Hooks** - Wagmi-style hooks for React applications
+- **🎭 Vue Composables** - Vue 3 Composition API support
 - **📦 Zero Config** - Works out of the box with sensible defaults
 - **🔐 Type Safe** - Full TypeScript support with comprehensive types
 - **🌐 Universal** - Supports browser and Node.js environments
@@ -72,6 +73,7 @@ The SDK is organized into multiple entry points for optimal tree-shaking:
 @fhevm-sdk
 ├── /core      → Framework-agnostic (Node.js, Vanilla JS)
 ├── /react     → React hooks (Wagmi-style)
+├── /vue       → Vue composables (Composition API)
 ├── /storage   → Storage utilities
 └── /types     → TypeScript types
 ```
@@ -289,6 +291,128 @@ function DecryptionComponent() {
     </div>
   );
 }
+```
+
+### Vue API (Composables)
+
+The Vue API provides composables for Vue 3's Composition API, mirroring the React hooks functionality.
+
+#### `useFhevm(config)`
+
+Main composable for FHEVM client management with automatic lifecycle handling.
+
+```vue
+<script setup>
+import { useFhevm } from '@fhevm-sdk/vue';
+
+const { instance, status, error, reconnect } = useFhevm({
+  network: window.ethereum,
+  chainId: 31337,
+  mockChains: { 31337: 'http://localhost:8545' },
+  debug: true,
+});
+</script>
+
+<template>
+  <div v-if="status === 'error'">
+    Error: {{ error?.message }}
+  </div>
+  <div v-else-if="status !== 'ready'">
+    Connecting... {{ status }}
+  </div>
+  <div v-else>
+    Connected! Instance ready.
+  </div>
+</template>
+```
+
+**Status values:** Same as React API (idle, connecting, ready, error, etc.)
+
+#### `useEncrypt(params)`
+
+Composable for encryption operations with builder pattern.
+
+```vue
+<script setup>
+import { useEncrypt } from '@fhevm-sdk/vue';
+import { ref } from 'vue';
+
+const props = defineProps(['instance', 'signer', 'contractAddress']);
+
+const { encrypt, canEncrypt } = useEncrypt({
+  instance: props.instance,
+  signer: props.signer,
+  contractAddress: props.contractAddress,
+});
+
+const handleEncrypt = async () => {
+  if (!canEncrypt.value) return;
+
+  const encrypted = await encrypt((input) => {
+    input.add64(42);
+    input.add32(100);
+    input.addBool(true);
+  });
+
+  // Use encrypted.handles and encrypted.inputProof
+  await myContract.myFunction(encrypted.handles, encrypted.inputProof);
+};
+</script>
+
+<template>
+  <button @click="handleEncrypt" :disabled="!canEncrypt">
+    Encrypt
+  </button>
+</template>
+```
+
+#### `useDecrypt(params)`
+
+Composable for decryption with automatic signature management.
+
+```vue
+<script setup>
+import { useDecrypt } from '@fhevm-sdk/vue';
+import { ref } from 'vue';
+
+const props = defineProps(['instance', 'signer', 'storage']);
+
+const requests = ref([
+  { handle: '0xabc...', contractAddress: '0x123...' },
+  { handle: '0xdef...', contractAddress: '0x456...' },
+]);
+
+const {
+  decrypt,
+  canDecrypt,
+  isDecrypting,
+  results,
+  message,
+  error
+} = useDecrypt({
+  instance: props.instance,
+  signer: props.signer,
+  requests,
+  storage: props.storage,
+});
+
+const handleDecrypt = async () => {
+  await decrypt();
+};
+</script>
+
+<template>
+  <div>
+    <button @click="handleDecrypt" :disabled="!canDecrypt">
+      {{ isDecrypting ? 'Decrypting...' : 'Decrypt' }}
+    </button>
+    <div v-if="results">
+      Result: {{ results['0xabc...']?.toString() }}
+    </div>
+    <p v-if="message">{{ message }}</p>
+    <p v-if="error">Error: {{ error }}</p>
+  </div>
+</template>
 ```
 
 ### Storage API
