@@ -31,11 +31,13 @@ export const useFHECounterNew = (parameters: {
   const { storage: fhevmDecryptionSignatureStorage } = useInMemoryStorage();
 
   // Wagmi + ethers interop
-  const { chainId, accounts, isConnected, ethersReadonlyProvider, ethersSigner } = useWagmiEthers(initialMockChains);
+  const { chainId, accounts, isConnected, ethersReadonlyProvider, fhevmProvider, ethersSigner } =
+    useWagmiEthers(initialMockChains);
 
   // NEW API: useFhevm() manages client lifecycle
+  // Use fhevmProvider which is EIP-1193 compatible (BrowserProvider | string)
   const { instance, status: fhevmStatus, error: fhevmError } = useFhevm({
-    network: ethersReadonlyProvider || undefined,
+    network: fhevmProvider || undefined,
     chainId: chainId as number | undefined,
     mockChains: initialMockChains,
   });

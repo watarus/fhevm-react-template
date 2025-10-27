@@ -222,7 +222,8 @@ Compare the code and see how the new API simplifies FHEVM integration!
 
 ### ⚠️ Sepolia Production note
 
-- In production, `NEXT_PUBLIC_ALCHEMY_API_KEY` must be set (see `packages/nextjs/scaffold.config.ts`). The app throws if missing.
+- `NEXT_PUBLIC_ALCHEMY_API_KEY` is optional (see `packages/nextjs/scaffold.config.ts`). The app will fall back to public RPCs if not set.
+- For better reliability and rate limits, it's recommended to set your own Alchemy API key in production.
 - Ensure `packages/nextjs/contracts/deployedContracts.ts` points to your live contract addresses.
 - Optional: set `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` for better WalletConnect reliability.
 - Optional: add per-chain RPCs via `rpcOverrides` in `packages/nextjs/scaffold.config.ts`.
