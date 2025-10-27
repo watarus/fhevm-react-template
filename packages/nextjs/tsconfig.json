@@ -15,7 +15,13 @@
     "jsx": "preserve",
     "incremental": true,
     "paths": {
-      "~~/*": ["./*"]
+      "~~/*": ["./*"],
+      "@fhevm-sdk": ["../fhevm-sdk/dist/index"],
+      "@fhevm-sdk/react": ["../fhevm-sdk/dist/react/index"],
+      "@fhevm-sdk/core": ["../fhevm-sdk/dist/core/index"],
+      "@fhevm-sdk/storage": ["../fhevm-sdk/dist/storage/index"],
+      "@fhevm-sdk/types": ["../fhevm-sdk/dist/fhevmTypes"],
+      "@fhevm-sdk/vue": ["../fhevm-sdk/dist/vue/index"]
     },
     "plugins": [
       {
