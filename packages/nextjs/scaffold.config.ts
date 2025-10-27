@@ -19,7 +19,8 @@ if (!rawAlchemyKey) {
 
 const scaffoldConfig = {
   // The networks on which your DApp is live
-  targetNetworks: [chains.hardhat, chains.sepolia],
+  // Use Sepolia for production/Vercel, Hardhat for local development with local node
+  targetNetworks: process.env.NODE_ENV === "development" ? [chains.sepolia, chains.hardhat] : [chains.sepolia],
   // The interval at which your front-end polls the RPC servers for new data (it has no effect if you only target the local network (default is 4000))
   pollingInterval: 30000,
   // This is ours Alchemy's default API key.
