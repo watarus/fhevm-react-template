@@ -2,13 +2,15 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { ethers } from "ethers";
-import { useAccount, useWalletClient } from "wagmi";
+import { useAccount, useWalletClient, useConfig } from "wagmi";
 
 export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, string>>) => {
   const { address, isConnected, chain } = useAccount();
   const { data: walletClient } = useWalletClient();
+  const wagmiConfig = useConfig();
 
-  const chainId = chain?.id ?? walletClient?.chain?.id;
+  // Determine chainId: use connected chain, or fallback to first configured chain
+  const chainId = chain?.id ?? walletClient?.chain?.id ?? (wagmiConfig.chains?.[0]?.id);
   const accounts = address ? [address] : undefined;
 
   const ethersProvider = useMemo(() => {
@@ -30,15 +32,30 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
   }, [walletClient]);
 
   const ethersReadonlyProvider = useMemo(() => {
-    if (!ethersProvider) return undefined;
-
+    // If we have a custom RPC URL for this chain, use it
     const rpcUrl = initialMockChains?.[chainId || 0];
     if (rpcUrl) {
       return new ethers.JsonRpcProvider(rpcUrl);
     }
 
-    return ethersProvider;
-  }, [ethersProvider, initialMockChains, chainId]);
+    // If wallet is connected, use the wallet's provider
+    if (ethersProvider) {
+      return ethersProvider;
+    }
+
+    // Fallback: Create a readonly provider using the chain's default RPC
+    // This is crucial for FHEVM SDK initialization before wallet connection
+    if (wagmiConfig.chains && wagmiConfig.chains.length > 0) {
+      // Use the connected chain if available, otherwise use the first configured chain
+      const targetChainId = chainId || wagmiConfig.chains[0].id;
+      const targetChain = wagmiConfig.chains.find((c) => c.id === targetChainId);
+      if (targetChain?.rpcUrls?.default?.http?.[0]) {
+        return new ethers.JsonRpcProvider(targetChain.rpcUrls.default.http[0]);
+      }
+    }
+
+    return undefined;
+  }, [ethersProvider, initialMockChains, chainId, wagmiConfig.chains]);
 
   const ethersSigner = useMemo(() => {
     if (!ethersProvider || !address) return undefined;
