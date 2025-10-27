@@ -30,14 +30,14 @@ export const useFHECounterNew = (parameters: {
   const { initialMockChains } = parameters;
   const { storage: fhevmDecryptionSignatureStorage } = useInMemoryStorage();
 
-  // Wagmi + ethers interop
-  const { chainId, accounts, isConnected, ethersReadonlyProvider, fhevmProvider, ethersSigner } =
-    useWagmiEthers(initialMockChains);
+  // Wagmi interop
+  const { chainId, accounts, isConnected, ethersReadonlyProvider, ethersSigner } = useWagmiEthers(initialMockChains);
 
-  // NEW API: useFhevm() manages client lifecycle
-  // Use fhevmProvider which is EIP-1193 compatible (BrowserProvider | string)
+  // NEW API: useFhevm() with Wagmi WalletClient support (zero-config!)
+  // The SDK now accepts ethersReadonlyProvider directly - no adapter needed!
   const { instance, status: fhevmStatus, error: fhevmError } = useFhevm({
-    network: fhevmProvider || undefined,
+    network: ethersReadonlyProvider,
+    fallbackRpc: initialMockChains?.[chainId || 0] || "http://localhost:8545",
     chainId: chainId as number | undefined,
     mockChains: initialMockChains,
   });

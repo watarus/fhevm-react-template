@@ -7,13 +7,34 @@ import type { Eip1193Provider } from "ethers";
 import type { FhevmInstance } from "../fhevmTypes";
 
 /**
+ * WalletClient type (Wagmi-compatible)
+ * Any object with a request method is considered EIP-1193 compatible
+ */
+export type WalletClient = {
+  request: (args: { method: string; params?: any[] }) => Promise<any>;
+  chain?: { id: number };
+};
+
+/**
  * FHEVM Client configuration
  */
 export interface FhevmClientConfig {
   /**
-   * Network provider (EIP-1193 provider or RPC URL)
+   * Network provider (EIP-1193 provider, WalletClient, RPC URL, or undefined)
+   * - Eip1193Provider: Standard EIP-1193 provider (e.g., MetaMask)
+   * - WalletClient: Wagmi WalletClient (zero-config support!)
+   * - string: RPC URL (e.g., "http://localhost:8545")
+   * - undefined: Use fallbackRpc when wallet not connected
    */
-  network: Eip1193Provider | string;
+  network?: Eip1193Provider | WalletClient | string;
+
+  /**
+   * Fallback RPC URL when network is undefined (e.g., wallet not connected)
+   * Enables FHEVM initialization before wallet connection
+   * @example "http://localhost:8545"
+   * @example "https://sepolia.drpc.org"
+   */
+  fallbackRpc?: string;
 
   /**
    * Chain ID (optional, will be auto-detected if not provided)

@@ -63,6 +63,36 @@ function MyDApp() {
 }
 ```
 
+## 🎉 Wagmi Integration (Zero Config!)
+
+The SDK works **seamlessly with Wagmi** - no adapters, no wrappers, just import and use:
+
+```typescript
+import { useFhevm, useEncrypt, useDecrypt } from '@fhevm-sdk/react';
+import { useWalletClient } from 'wagmi';
+
+function MyWagmiDApp() {
+  const { data: walletClient } = useWalletClient();
+
+  // Direct WalletClient support - no adapter needed!
+  const { instance, status } = useFhevm({
+    network: walletClient,              // Works directly!
+    fallbackRpc: 'http://localhost:8545', // For pre-connection
+    chainId: 31337,
+  });
+
+  const { encrypt } = useEncrypt({ instance, signer, contractAddress });
+  const { decrypt, results } = useDecrypt({ instance, signer, requests, storage });
+
+  return <div>Status: {status}</div>;
+}
+```
+
+**Before SDK Enhancement**: 80+ lines of adapter code
+**After SDK Enhancement**: 10 lines, zero adapter
+
+The SDK automatically detects Wagmi's `WalletClient` and handles the provider integration for you!
+
 ## 📚 Documentation
 
 ### Architecture

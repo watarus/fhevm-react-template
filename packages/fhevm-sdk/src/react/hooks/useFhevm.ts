@@ -49,7 +49,7 @@ export interface UseFhevmResult {
  * @param config - FHEVM client configuration
  * @returns FHEVM instance and status
  *
- * @example
+ * @example Basic usage
  * ```typescript
  * import { useFhevm } from '@fhevm-sdk/react';
  *
@@ -62,6 +62,25 @@ export interface UseFhevmResult {
  *   if (status === 'ready' && instance) {
  *     // Use instance for encryption/decryption
  *   }
+ *
+ *   return <div>Status: {status}</div>;
+ * }
+ * ```
+ *
+ * @example Wagmi integration (zero-config!)
+ * ```typescript
+ * import { useFhevm } from '@fhevm-sdk/react';
+ * import { useWalletClient } from 'wagmi';
+ *
+ * function MyComponent() {
+ *   const { data: walletClient } = useWalletClient();
+ *
+ *   // Works directly with WalletClient - no adapter needed!
+ *   const { instance, status } = useFhevm({
+ *     network: walletClient,
+ *     fallbackRpc: 'http://localhost:8545', // For pre-connection
+ *     chainId: 31337,
+ *   });
  *
  *   return <div>Status: {status}</div>;
  * }
