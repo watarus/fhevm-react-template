@@ -105,6 +105,14 @@ export function useFhevm(
   const { network, chainId, mockChains, debug } = normalizedConfig;
 
   useEffect(() => {
+    // Skip initialization if network provider is not available
+    if (!network) {
+      setStatus("idle");
+      setInstance(undefined);
+      setError(undefined);
+      return;
+    }
+
     // Create client
     const client = createFhevmClient({
       network,
