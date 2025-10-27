@@ -17,7 +17,7 @@ if (!rawAlchemyKey) {
   console.warn("NEXT_PUBLIC_ALCHEMY_API_KEY is not set. Falling back to public RPCs.");
 }
 
-const scaffoldConfig = {
+const scaffoldConfig: ScaffoldConfig = {
   // The networks on which your DApp is live
   // Use Sepolia for production/Vercel, Hardhat for local development with local node
   targetNetworks: process.env.NODE_ENV === "development" ? [chains.sepolia, chains.hardhat] : [chains.sepolia],
@@ -40,6 +40,6 @@ const scaffoldConfig = {
   // .env.local for local testing, and in the Vercel/system env config for live apps.
   walletConnectProjectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || "3a8170812b534d0ff9d794f19a901d64",
   onlyLocalBurnerWallet: true,
-} as const satisfies ScaffoldConfig;
+};
 
 export default scaffoldConfig;

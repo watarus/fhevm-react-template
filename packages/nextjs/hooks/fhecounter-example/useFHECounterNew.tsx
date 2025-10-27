@@ -10,6 +10,7 @@ import { ethers } from "ethers";
 import type { Contract } from "~~/utils/helper/contract";
 import type { AllowedChainIds } from "~~/utils/helper/networks";
 import { useReadContract } from "wagmi";
+import type { Abi, AbiFunction } from "viem";
 
 /**
  * useFHECounterNew - FHE Counter hook using NEW Universal FHEVM SDK API
@@ -146,11 +147,15 @@ export const useFHECounterNew = (parameters: {
   );
 
   const getEncryptionMethodFor = (functionName: "increment" | "decrement") => {
-    const functionAbi = fheCounter?.abi.find(item => item.type === "function" && item.name === functionName);
+    const functionAbi = fheCounter?.abi.find(
+      (item: Abi[number]) => item.type === "function" && item.name === functionName,
+    ) as AbiFunction | undefined;
     if (!functionAbi) return { method: undefined as string | undefined, error: `Function ABI not found for ${functionName}` } as const;
     if (!functionAbi.inputs || functionAbi.inputs.length === 0)
       return { method: undefined as string | undefined, error: `No inputs found for ${functionName}` } as const;
     const firstInput = functionAbi.inputs[0]!;
+    if (!firstInput.internalType)
+      return { method: undefined as string | undefined, error: `No internalType found for ${functionName}` } as const;
     return { method: getEncryptionMethod(firstInput.internalType), error: undefined } as const;
   };
 
