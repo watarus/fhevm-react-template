@@ -11,3 +11,4 @@ tmp*
 .vscode
 .claude/
 .vercel
+.turbo

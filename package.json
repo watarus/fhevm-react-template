@@ -3,14 +3,17 @@
   "version": "0.4.1",
   "private": true,
   "license": "BSD-3-Clause-Clear",
+  "packageManager": "pnpm@10.8.1",
   "engines": {
     "node": ">=20.0.0"
   },
   "scripts": {
+    "build": "turbo run build",
     "chain": "pnpm hardhat:chain",
     "compile": "pnpm hardhat:compile",
     "deploy:localhost": "pnpm hardhat:deploy && pnpm generate",
     "deploy:sepolia": "pnpm hardhat:deploy:sepolia && pnpm generate",
+    "dev": "turbo run dev",
     "fork": "pnpm hardhat:fork",
     "format": "pnpm next:format && pnpm hardhat:format",
     "sdk:build": "pnpm --filter ./packages/fhevm-sdk build",
@@ -33,7 +36,7 @@
     "hardhat:test": "pnpm --filter ./packages/hardhat test",
     "hardhat:verify": "pnpm --filter ./packages/hardhat verify",
     "hardhat:verify:sepolia": "pnpm --filter ./packages/hardhat verify:sepolia",
-    "lint": "pnpm next:lint && pnpm hardhat:lint",
+    "lint": "turbo run lint",
     "next:build": "pnpm --filter ./packages/nextjs build",
     "next:check-types": "pnpm --filter ./packages/nextjs check-types",
     "next:format": "pnpm --filter ./packages/nextjs format",
@@ -56,6 +59,7 @@
     "@types/node": "^22.7.5",
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
+    "turbo": "^2.5.8",
     "typescript": "^5.9.2"
   },
   "pnpm": {
