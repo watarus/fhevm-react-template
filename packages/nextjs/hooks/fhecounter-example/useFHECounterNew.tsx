@@ -37,7 +37,6 @@ export const useFHECounterNew = (parameters: {
   // The SDK now accepts ethersReadonlyProvider directly - no adapter needed!
   const { instance, status: fhevmStatus, error: fhevmError } = useFhevm({
     network: ethersReadonlyProvider,
-    fallbackRpc: initialMockChains?.[chainId || 0] || "http://localhost:8545",
     chainId: chainId as number | undefined,
     mockChains: initialMockChains,
   });
