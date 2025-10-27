@@ -18,6 +18,7 @@ import { useFHECounterNew } from "~~/hooks/fhecounter-example/useFHECounterNew";
 export const FHECounterDemoNew = () => {
   const { isConnected, chain } = useAccount();
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const chainId = chain?.id;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -45,18 +46,15 @@ export const FHECounterDemoNew = () => {
 
   // Primary (accent) button — #FFD208 with dark text and warm hover #A38025
   const primaryButtonClass =
-    buttonClass +
-    " bg-[#FFD208] text-[#2D2D2D] hover:bg-[#A38025] focus-visible:ring-[#2D2D2D]  cursor-pointer";
+    buttonClass + " bg-[#FFD208] text-[#2D2D2D] hover:bg-[#A38025] focus-visible:ring-[#2D2D2D]  cursor-pointer";
 
   // Secondary (neutral dark) button — #2D2D2D with light text and accent focus
   const secondaryButtonClass =
-    buttonClass +
-    " bg-black text-[#F4F4F4] hover:bg-[#1F1F1F] focus-visible:ring-[#FFD208] cursor-pointer";
+    buttonClass + " bg-black text-[#F4F4F4] hover:bg-[#1F1F1F] focus-visible:ring-[#FFD208] cursor-pointer";
 
   // Success/confirmed state — deeper gold #A38025 with dark text
   const successButtonClass =
-    buttonClass +
-    " bg-[#A38025] text-[#2D2D2D] hover:bg-[#8F6E1E] focus-visible:ring-[#2D2D2D]";
+    buttonClass + " bg-[#A38025] text-[#2D2D2D] hover:bg-[#8F6E1E] focus-visible:ring-[#2D2D2D]";
 
   const titleClass = "font-bold text-gray-900 text-xl mb-4 border-b-1 border-gray-700 pb-2";
   const sectionClass = "bg-[#f4f4f4] shadow-lg p-6 mb-6 text-gray-900";
@@ -163,10 +161,7 @@ export const FHECounterDemoNew = () => {
           <div className="space-y-3">
             {printProperty("Status", fheCounter.fhevmStatus)}
             {printProperty("Error", fheCounter.fhevmError ?? "No errors")}
-            {printProperty(
-              "Features",
-              "Event-driven • Auto lifecycle • Type-safe"
-            )}
+            {printProperty("Features", "Event-driven • Auto lifecycle • Type-safe")}
           </div>
         </div>
 
@@ -247,9 +242,7 @@ function printBooleanProperty(name: string, value: boolean) {
       <span className="text-gray-700 font-medium">{name}</span>
       <span
         className={`font-mono text-sm font-semibold px-2 py-1 border ${
-          value
-            ? "text-green-800 bg-green-100 border-green-300"
-            : "text-red-800 bg-red-100 border-red-300"
+          value ? "text-green-800 bg-green-100 border-green-300" : "text-red-800 bg-red-100 border-red-300"
         }`}
       >
         {value ? "✓ true" : "✗ false"}

@@ -6,11 +6,6 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "workspaces": {
-    "packages": [
-      "packages/*"
-    ]
-  },
   "scripts": {
     "chain": "pnpm hardhat:chain",
     "compile": "pnpm hardhat:compile",
@@ -57,6 +52,7 @@
     "hardhat-deploy": "^0.11.45"
   },
   "devDependencies": {
+    "@types/minimatch": "^6.0.0",
     "@types/node": "^22.7.5",
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",

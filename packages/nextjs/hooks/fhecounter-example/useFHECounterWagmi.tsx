@@ -7,8 +7,8 @@ import { FhevmInstance } from "@fhevm-sdk";
 import {
   buildParamsFromAbi,
   getEncryptionMethod,
-  useFHEDecrypt,
-  useFHEEncryption,
+  useDecrypt,
+  useEncrypt,
   useInMemoryStorage,
 } from "@fhevm-sdk";
 import { ethers } from "ethers";
@@ -21,7 +21,7 @@ import { useReadContract } from "wagmi";
  *
  * What it does:
  * - Reads the current encrypted counter
- * - Decrypts the handle on-demand with useFHEDecrypt
+ * - Decrypts the handle on-demand with useDecrypt
  * - Encrypts inputs and writes increment/decrement
  *
  * Pass your FHEVM instance and a simple key-value storage for the decryption signature.
@@ -104,10 +104,10 @@ export const useFHECounterWagmi = (parameters: {
     isDecrypting,
     message: decMsg,
     results,
-  } = useFHEDecrypt({
+  } = useDecrypt({
     instance,
-    ethersSigner: ethersSigner as any,
-    fhevmDecryptionSignatureStorage,
+    signer: ethersSigner as any,
+    storage: fhevmDecryptionSignatureStorage,
     chainId,
     requests,
   });
@@ -128,7 +128,7 @@ export const useFHECounterWagmi = (parameters: {
   const decryptCountHandle = decrypt;
 
   // Mutations (increment/decrement)
-  const { encryptWith } = useFHEEncryption({ instance, ethersSigner: ethersSigner as any, contractAddress: fheCounter?.address });
+  const { encrypt: encryptWith } = useEncrypt({ instance, signer: ethersSigner as any, contractAddress: fheCounter?.address });
   const canUpdateCounter = useMemo(
     () => Boolean(hasContract && instance && hasSigner && !isProcessing),
     [hasContract, instance, hasSigner, isProcessing],

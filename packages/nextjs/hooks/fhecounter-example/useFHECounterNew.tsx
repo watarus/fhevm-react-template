@@ -114,6 +114,7 @@ export const useFHECounterNew = (parameters: {
   } = useDecrypt({
     instance,
     signer: ethersSigner as any,
+    chainId: chainId as number | undefined,
     requests,
     storage: fhevmDecryptionSignatureStorage,
   });
