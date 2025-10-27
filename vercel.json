@@ -1,4 +1,0 @@
-{
-  "buildCommand": "cd ../.. && pnpm --filter @fhevm-sdk build && pnpm --filter site build",
-  "installCommand": "cd ../.. && pnpm install"
-}
