@@ -207,12 +207,9 @@ async function resolve(
 
 /**
  * Normalize provider to Eip1193Provider | string
- * Supports: Eip1193Provider, WalletClient (duck-typing), string, undefined (with fallback)
+ * Supports: Eip1193Provider, WalletClient (duck-typing), string
  */
-function normalizeProvider(
-  provider: any,
-  fallbackRpc?: string
-): Eip1193Provider | string {
+function normalizeProvider(provider: any): Eip1193Provider | string {
   // String: direct RPC URL
   if (typeof provider === "string") {
     return provider;
@@ -223,20 +220,14 @@ function normalizeProvider(
     return provider as Eip1193Provider;
   }
 
-  // Undefined: use fallback RPC
-  if (!provider && fallbackRpc) {
-    return fallbackRpc;
-  }
-
   throw new Error(
-    "Valid network provider or fallbackRpc required. " +
-      "Provide one of: Eip1193Provider, WalletClient, RPC URL string, or set fallbackRpc option."
+    "Valid network provider required. " +
+      "Provide one of: Eip1193Provider, WalletClient, or RPC URL string."
   );
 }
 
 export const createFhevmInstance = async (parameters: {
   provider?: Eip1193Provider | any | string; // Accept WalletClient via duck-typing
-  fallbackRpc?: string;
   mockChains?: Record<number, string>;
   signal: AbortSignal;
   onStatusChange?: (status: FhevmRelayerStatusType) => void;
@@ -253,12 +244,11 @@ export const createFhevmInstance = async (parameters: {
     signal,
     onStatusChange,
     provider,
-    fallbackRpc,
     mockChains,
   } = parameters;
 
-  // Normalize provider (supports WalletClient, Eip1193Provider, string, undefined)
-  const providerOrUrl = normalizeProvider(provider, fallbackRpc);
+  // Normalize provider (supports WalletClient, Eip1193Provider, string)
+  const providerOrUrl = normalizeProvider(provider);
 
   // Resolve chainId
   const { isMock, rpcUrl, chainId } = await resolve(providerOrUrl, mockChains);

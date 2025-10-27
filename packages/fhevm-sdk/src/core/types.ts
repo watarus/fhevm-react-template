@@ -20,21 +20,13 @@ export type WalletClient = {
  */
 export interface FhevmClientConfig {
   /**
-   * Network provider (EIP-1193 provider, WalletClient, RPC URL, or undefined)
+   * Network provider (EIP-1193 provider, WalletClient, or RPC URL)
    * - Eip1193Provider: Standard EIP-1193 provider (e.g., MetaMask)
    * - WalletClient: Wagmi WalletClient (zero-config support!)
    * - string: RPC URL (e.g., "http://localhost:8545")
-   * - undefined: Use fallbackRpc when wallet not connected
+   * Required for FHEVM instance creation
    */
   network?: Eip1193Provider | WalletClient | string;
-
-  /**
-   * Fallback RPC URL when network is undefined (e.g., wallet not connected)
-   * Enables FHEVM initialization before wallet connection
-   * @example "http://localhost:8545"
-   * @example "https://sepolia.drpc.org"
-   */
-  fallbackRpc?: string;
 
   /**
    * Chain ID (optional, will be auto-detected if not provided)
