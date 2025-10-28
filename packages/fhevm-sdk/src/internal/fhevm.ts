@@ -318,6 +318,18 @@ export const createFhevmInstance = async (parameters: {
 
   const relayerSDK = (window as unknown as FhevmWindowType).relayerSDK;
 
+  // Check if connected to Sepolia Testnet (only for non-mock networks)
+  // Mock networks (localhost:8545, etc.) are handled above
+  const SEPOLIA_CHAIN_ID = 11155111;
+  const isMockNetwork = mockChains && Object.hasOwn(mockChains, chainId);
+
+  if (!isMockNetwork && chainId !== SEPOLIA_CHAIN_ID) {
+    throwFhevmError(
+      "UNSUPPORTED_NETWORK",
+      `FHEVM is currently only supported on Sepolia Testnet (chainId: ${SEPOLIA_CHAIN_ID}) or local development networks. You are connected to chainId: ${chainId}. Please switch to Sepolia Testnet in your wallet.`
+    );
+  }
+
   const aclAddress = relayerSDK.SepoliaConfig.aclContractAddress;
   if (!checkIsAddress(aclAddress)) {
     throw new Error(`Invalid address: ${aclAddress}`);
