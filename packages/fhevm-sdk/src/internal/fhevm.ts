@@ -207,7 +207,7 @@ async function resolve(
 
 /**
  * Normalize provider to Eip1193Provider | string
- * Supports: Eip1193Provider, WalletClient (duck-typing), string
+ * Supports: Eip1193Provider, WalletClient, ethers.BrowserProvider, string
  */
 function normalizeProvider(provider: any): Eip1193Provider | string {
   // String: direct RPC URL
@@ -220,9 +220,19 @@ function normalizeProvider(provider: any): Eip1193Provider | string {
     return provider as Eip1193Provider;
   }
 
+  // ethers.BrowserProvider support: has .send() instead of .request()
+  // Wrap it to provide .request() interface
+  if (provider && typeof provider === "object" && "send" in provider) {
+    return {
+      request: async ({ method, params }: { method: string; params?: any[] }) => {
+        return await provider.send(method, params || []);
+      },
+    } as Eip1193Provider;
+  }
+
   throw new Error(
     "Valid network provider required. " +
-      "Provide one of: Eip1193Provider, WalletClient, or RPC URL string."
+      "Provide one of: Eip1193Provider, WalletClient, ethers.BrowserProvider, or RPC URL string."
   );
 }
 

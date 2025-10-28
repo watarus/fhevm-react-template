@@ -13,11 +13,10 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
   const chainId = chain?.id ?? walletClient?.chain?.id ?? (wagmiConfig.chains?.[0]?.id);
   const accounts = address ? [address] : undefined;
 
-  // Create EIP-1193 adapter (reusable for both ethers and FHEVM SDK)
-  const eip1193Adapter = useMemo(() => {
+  const ethersProvider = useMemo(() => {
     if (!walletClient) return undefined;
 
-    return {
+    const eip1193Provider = {
       request: async (args: any) => {
         return await walletClient.request(args);
       },
@@ -28,12 +27,9 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
         console.log("Provider removeListener not fully implemented for wagmi");
       },
     } as ethers.Eip1193Provider;
-  }, [walletClient]);
 
-  const ethersProvider = useMemo(() => {
-    if (!eip1193Adapter) return undefined;
-    return new ethers.BrowserProvider(eip1193Adapter);
-  }, [eip1193Adapter]);
+    return new ethers.BrowserProvider(eip1193Provider);
+  }, [walletClient]);
 
   const ethersReadonlyProvider = useMemo(() => {
     // If we have a custom RPC URL for this chain, use it
@@ -61,8 +57,8 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
     return undefined;
   }, [ethersProvider, initialMockChains, chainId, wagmiConfig.chains]);
 
-  // FHEVM-compatible provider: Eip1193Provider | string
-  // This is used specifically for FHEVM SDK which needs EIP-1193 or RPC URL
+  // FHEVM-compatible provider: Eip1193Provider | string | ethers.BrowserProvider
+  // SDK now accepts BrowserProvider and converts .send() to .request() internally
   const fhevmProvider = useMemo(() => {
     // If we have a custom RPC URL, return it as string
     const rpcUrl = initialMockChains?.[chainId || 0];
@@ -70,10 +66,10 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
       return rpcUrl;
     }
 
-    // If wallet is connected, return the raw EIP-1193 adapter (not BrowserProvider!)
-    // BrowserProvider has .send() but not .request(), so it fails normalizeProvider check
-    if (eip1193Adapter) {
-      return eip1193Adapter;
+    // If wallet is connected, return ethersProvider (BrowserProvider)
+    // SDK's normalizeProvider will handle .send() -> .request() conversion
+    if (ethersProvider) {
+      return ethersProvider;
     }
 
     // Fallback: Return RPC URL string for FHEVM SDK
@@ -86,7 +82,7 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
     }
 
     return undefined;
-  }, [eip1193Adapter, initialMockChains, chainId, wagmiConfig.chains]);
+  }, [ethersProvider, initialMockChains, chainId, wagmiConfig.chains]);
 
   const ethersSigner = useMemo(() => {
     if (!ethersProvider || !address) return undefined;
