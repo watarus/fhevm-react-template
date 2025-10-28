@@ -13,10 +13,11 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
   const chainId = chain?.id ?? walletClient?.chain?.id ?? (wagmiConfig.chains?.[0]?.id);
   const accounts = address ? [address] : undefined;
 
-  const ethersProvider = useMemo(() => {
+  // Create EIP-1193 adapter (reusable for both ethers and FHEVM SDK)
+  const eip1193Adapter = useMemo(() => {
     if (!walletClient) return undefined;
 
-    const eip1193Provider = {
+    return {
       request: async (args: any) => {
         return await walletClient.request(args);
       },
@@ -27,9 +28,12 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
         console.log("Provider removeListener not fully implemented for wagmi");
       },
     } as ethers.Eip1193Provider;
-
-    return new ethers.BrowserProvider(eip1193Provider);
   }, [walletClient]);
+
+  const ethersProvider = useMemo(() => {
+    if (!eip1193Adapter) return undefined;
+    return new ethers.BrowserProvider(eip1193Adapter);
+  }, [eip1193Adapter]);
 
   const ethersReadonlyProvider = useMemo(() => {
     // If we have a custom RPC URL for this chain, use it
@@ -66,9 +70,10 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
       return rpcUrl;
     }
 
-    // If wallet is connected, ethersProvider (BrowserProvider) is EIP-1193 compatible
-    if (ethersProvider) {
-      return ethersProvider;
+    // If wallet is connected, return the raw EIP-1193 adapter (not BrowserProvider!)
+    // BrowserProvider has .send() but not .request(), so it fails normalizeProvider check
+    if (eip1193Adapter) {
+      return eip1193Adapter;
     }
 
     // Fallback: Return RPC URL string for FHEVM SDK
@@ -81,7 +86,7 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
     }
 
     return undefined;
-  }, [ethersProvider, initialMockChains, chainId, wagmiConfig.chains]);
+  }, [eip1193Adapter, initialMockChains, chainId, wagmiConfig.chains]);
 
   const ethersSigner = useMemo(() => {
     if (!ethersProvider || !address) return undefined;
