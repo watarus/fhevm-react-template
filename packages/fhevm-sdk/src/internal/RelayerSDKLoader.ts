@@ -3,6 +3,9 @@ import { SDK_CDN_URL } from "./constants";
 
 type TraceType = (message?: unknown, ...optionalParams: unknown[]) => void;
 
+// Cache the load promise to prevent multiple simultaneous loads
+let loadPromise: Promise<void> | null = null;
+
 export class RelayerSDKLoader {
   private _trace?: TraceType;
 
@@ -35,19 +38,44 @@ export class RelayerSDKLoader {
       return Promise.resolve();
     }
 
-    return new Promise((resolve, reject) => {
+    // Return cached promise if loading is already in progress
+    if (loadPromise) {
+      console.log("[RelayerSDKLoader] Returning cached load promise");
+      return loadPromise;
+    }
+
+    // Create new load promise and cache it
+    loadPromise = new Promise((resolve, reject) => {
       const existingScript = document.querySelector(
         `script[src="${SDK_CDN_URL}"]`
       );
       if (existingScript) {
-        if (!isFhevmWindowType(window, this._trace)) {
+        // Script tag exists - check if already loaded
+        if (isFhevmWindowType(window, this._trace)) {
+          resolve();
+          return;
+        }
+
+        // Script tag exists but not loaded yet - wait for load event
+        console.log("[RelayerSDKLoader] Script tag exists, waiting for load...");
+        existingScript.addEventListener("load", () => {
+          if (!isFhevmWindowType(window, this._trace)) {
+            reject(
+              new Error(
+                "RelayerSDKLoader: window object does not contain a valid relayerSDK object."
+              )
+            );
+          } else {
+            resolve();
+          }
+        });
+        existingScript.addEventListener("error", () => {
           reject(
             new Error(
-              "RelayerSDKLoader: window object does not contain a valid relayerSDK object."
+              `RelayerSDKLoader: Failed to load Relayer SDK from ${SDK_CDN_URL}`
             )
           );
-        }
-        resolve();
+        });
         return;
       }
 
@@ -81,6 +109,8 @@ export class RelayerSDKLoader {
       document.head.appendChild(script);
       console.log("[RelayerSDKLoader] script added!")
     });
+
+    return loadPromise;
   }
 }
 
