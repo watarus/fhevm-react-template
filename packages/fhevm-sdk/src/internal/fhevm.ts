@@ -323,16 +323,13 @@ export const createFhevmInstance = async (parameters: {
     throw new Error(`Invalid address: ${aclAddress}`);
   }
 
-  const pub = await publicKeyStorageGet(aclAddress);
-  throwIfAborted();
-
+  // Don't use cached public key - always fetch fresh from relayer
+  // This avoids deserialization errors from corrupted cached data
   const config: FhevmInstanceConfig = {
     ...relayerSDK.SepoliaConfig,
     network: providerOrUrl,
-    // Only include publicKey if it exists, otherwise relayer will fetch it
-    ...(pub.publicKey && { publicKey: pub.publicKey }),
-    // Only include publicParams if it exists, otherwise relayer will fetch it
-    ...(pub.publicParams && { publicParams: pub.publicParams }),
+    // Note: publicKey and publicParams are intentionally omitted
+    // so that relayerSDK.createInstance will fetch them from relayerUrl
   };
 
   // notify that state === "creating"
