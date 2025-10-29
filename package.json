@@ -55,8 +55,8 @@
     "hardhat-deploy": "^0.11.45"
   },
   "devDependencies": {
-    "@types/minimatch": "^6.0.0",
     "@types/node": "^22.7.5",
+    "@zama-fhe/relayer-sdk": "0.2.0",
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
     "turbo": "^2.5.8",

@@ -5,6 +5,7 @@ import { useFhevm } from "@fhevm-sdk";
 import { useAccount } from "wagmi";
 import { RainbowKitCustomConnectButton } from "~~/components/helper/RainbowKitCustomConnectButton";
 import { useFHECounterWagmi } from "~~/hooks/fhecounter-example/useFHECounterWagmi";
+import { getMockChains } from "~~/config/fhevm";
 
 /*
  * Main FHECounter React component with 3 buttons
@@ -12,6 +13,10 @@ import { useFHECounterWagmi } from "~~/hooks/fhecounter-example/useFHECounterWag
  *  - "Increment" button: allows you to increment the FHECounter count handle using FHE operations.
  *  - "Decrement" button: allows you to decrement the FHECounter count handle using FHE operations.
  */
+
+// Get mock chains configuration based on environment variable
+const INITIAL_MOCK_CHAINS = getMockChains();
+
 export const FHECounterDemo = () => {
   const { isConnected, chain } = useAccount();
 
@@ -29,8 +34,6 @@ export const FHECounterDemo = () => {
     return (window as any).ethereum;
   }, []);
 
-  const initialMockChains = { 31337: "http://localhost:8545" };
-
   const {
     instance: fhevmInstance,
     status: fhevmStatus,
@@ -38,7 +41,7 @@ export const FHECounterDemo = () => {
   } = useFhevm({
     provider,
     chainId,
-    initialMockChains,
+    initialMockChains: INITIAL_MOCK_CHAINS,
     enabled: true, // use enabled to dynamically create the instance on-demand
   });
 
@@ -51,7 +54,7 @@ export const FHECounterDemo = () => {
 
   const fheCounter = useFHECounterWagmi({
     instance: fhevmInstance,
-    initialMockChains,
+    initialMockChains: INITIAL_MOCK_CHAINS,
   });
 
   //////////////////////////////////////////////////////////////////////////////

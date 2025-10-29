@@ -11,25 +11,49 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
 
   // Determine chainId: use connected chain, or fallback to first configured chain
   const chainId = chain?.id ?? walletClient?.chain?.id ?? (wagmiConfig.chains?.[0]?.id);
-  const accounts = address ? [address] : undefined;
+
+  // Stabilize accounts array reference to prevent unnecessary re-renders
+  const accounts = useMemo(() => {
+    return address ? [address] : undefined;
+  }, [address]);
+
+  // Use ref to stabilize ethersProvider reference and prevent infinite loops
+  const ethersProviderRef = useRef<ethers.BrowserProvider | undefined>(undefined);
+  const prevWalletClientRef = useRef<typeof walletClient>(undefined);
 
   const ethersProvider = useMemo(() => {
-    if (!walletClient) return undefined;
+    if (!walletClient) {
+      ethersProviderRef.current = undefined;
+      prevWalletClientRef.current = undefined;
+      return undefined;
+    }
 
-    const eip1193Provider = {
-      request: async (args: any) => {
-        return await walletClient.request(args);
-      },
-      on: () => {
-        console.log("Provider events not fully implemented for wagmi");
-      },
-      removeListener: () => {
-        console.log("Provider removeListener not fully implemented for wagmi");
-      },
-    } as ethers.Eip1193Provider;
+    // Only create new instance if walletClient reference actually changed
+    if (walletClient !== prevWalletClientRef.current) {
+      const eip1193Provider = {
+        request: async (args: any) => {
+          return await walletClient.request(args);
+        },
+        on: () => {
+          console.log("Provider events not fully implemented for wagmi");
+        },
+        removeListener: () => {
+          console.log("Provider removeListener not fully implemented for wagmi");
+        },
+      } as ethers.Eip1193Provider;
 
-    return new ethers.BrowserProvider(eip1193Provider);
+      ethersProviderRef.current = new ethers.BrowserProvider(eip1193Provider);
+      prevWalletClientRef.current = walletClient;
+    }
+
+    return ethersProviderRef.current;
   }, [walletClient]);
+
+  // Stabilize chains reference to prevent unnecessary re-renders
+  const chainsRef = useRef(wagmiConfig.chains);
+  useEffect(() => {
+    chainsRef.current = wagmiConfig.chains;
+  }, [wagmiConfig.chains]);
 
   const ethersReadonlyProvider = useMemo(() => {
     // If we have a custom RPC URL for this chain, use it
@@ -45,17 +69,18 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
 
     // Fallback: Create a readonly provider using the chain's default RPC
     // This is crucial for FHEVM SDK initialization before wallet connection
-    if (wagmiConfig.chains && wagmiConfig.chains.length > 0) {
+    const chains = chainsRef.current;
+    if (chains && chains.length > 0) {
       // Use the connected chain if available, otherwise use the first configured chain
-      const targetChainId = chainId || wagmiConfig.chains[0].id;
-      const targetChain = wagmiConfig.chains.find((c) => c.id === targetChainId);
+      const targetChainId = chainId || chains[0].id;
+      const targetChain = chains.find((c) => c.id === targetChainId);
       if (targetChain?.rpcUrls?.default?.http?.[0]) {
         return new ethers.JsonRpcProvider(targetChain.rpcUrls.default.http[0]);
       }
     }
 
     return undefined;
-  }, [ethersProvider, initialMockChains, chainId, wagmiConfig.chains]);
+  }, [ethersProvider, initialMockChains, chainId]);
 
   // FHEVM-compatible provider: Eip1193Provider | string | ethers.BrowserProvider
   // SDK now accepts BrowserProvider and converts .send() to .request() internally
@@ -73,16 +98,17 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
     }
 
     // Fallback: Return RPC URL string for FHEVM SDK
-    if (wagmiConfig.chains && wagmiConfig.chains.length > 0) {
-      const targetChainId = chainId || wagmiConfig.chains[0].id;
-      const targetChain = wagmiConfig.chains.find((c) => c.id === targetChainId);
+    const chains = chainsRef.current;
+    if (chains && chains.length > 0) {
+      const targetChainId = chainId || chains[0].id;
+      const targetChain = chains.find((c) => c.id === targetChainId);
       if (targetChain?.rpcUrls?.default?.http?.[0]) {
         return targetChain.rpcUrls.default.http[0];
       }
     }
 
     return undefined;
-  }, [ethersProvider, initialMockChains, chainId, wagmiConfig.chains]);
+  }, [ethersProvider, initialMockChains, chainId]);
 
   const ethersSigner = useMemo(() => {
     if (!ethersProvider || !address) return undefined;

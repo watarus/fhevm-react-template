@@ -83,9 +83,20 @@ export class RelayerSDKLoader {
       script.src = SDK_CDN_URL;
       script.type = "text/javascript";
       script.async = true;
+      script.crossOrigin = "anonymous";
+
+      // Polling-based approach as onload may not fire in some environments
+      const checkLoaded = () => {
+        if (isFhevmWindowType(window, this._trace)) {
+          console.log("[RelayerSDKLoader] SDK loaded successfully via polling");
+          resolve();
+          return true;
+        }
+        return false;
+      };
 
       script.onload = () => {
-        if (!isFhevmWindowType(window, this._trace)) {
+        if (!checkLoaded()) {
           console.log("[RelayerSDKLoader] script onload FAILED...");
           reject(
             new Error(
@@ -93,7 +104,6 @@ export class RelayerSDKLoader {
             )
           );
         }
-        resolve();
       };
 
       script.onerror = () => {
@@ -107,7 +117,26 @@ export class RelayerSDKLoader {
 
       console.log("[RelayerSDKLoader] add script to DOM...");
       document.head.appendChild(script);
-      console.log("[RelayerSDKLoader] script added!")
+      console.log("[RelayerSDKLoader] script added!");
+
+      // Fallback: poll for window.relayerSDK in case onload doesn't fire
+      const pollInterval = setInterval(() => {
+        if (checkLoaded()) {
+          clearInterval(pollInterval);
+        }
+      }, 100);
+
+      // Timeout after 10 seconds
+      setTimeout(() => {
+        clearInterval(pollInterval);
+        if (!isFhevmWindowType(window, this._trace)) {
+          reject(
+            new Error(
+              `RelayerSDKLoader: Timeout waiting for Relayer SDK to load from ${SDK_CDN_URL}`
+            )
+          );
+        }
+      }, 10000)
     });
 
     return loadPromise;

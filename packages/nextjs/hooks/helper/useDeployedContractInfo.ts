@@ -9,6 +9,7 @@ import {
   UseDeployedContractConfig,
   contracts,
 } from "~~/utils/helper/contract";
+import { getContractAddress } from "~~/config/fhevm";
 
 type DeployedContractData<TContractName extends ContractName> = {
   data: Contract<TContractName> | undefined;
@@ -48,7 +49,17 @@ export function useDeployedContractInfo<TContractName extends ContractName>(
   const selectedNetwork = useSelectedNetwork(chainId);
   const networkId = selectedNetwork.id as number;
   const contractNameStr = contractName as string;
-  const deployedContract = contracts?.[networkId]?.[contractNameStr] as Contract<TContractName>;
+  let deployedContract = contracts?.[networkId]?.[contractNameStr] as Contract<TContractName>;
+
+  // Override contract address from environment variable if available
+  const envContractAddress = getContractAddress();
+  if (envContractAddress && deployedContract) {
+    deployedContract = {
+      ...deployedContract,
+      address: envContractAddress,
+    };
+  }
+
   const [status, setStatus] = useState<ContractCodeStatus>(ContractCodeStatus.LOADING);
   const publicClient = usePublicClient({ chainId: selectedNetwork.id });
 

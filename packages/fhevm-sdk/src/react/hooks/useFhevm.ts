@@ -149,7 +149,7 @@ export function useFhevm(
       client.disconnect();
       client.removeAllListeners();
     };
-  }, [network, chainId, mockChains, debug]);
+  }, [network, mockChains, debug]);
 
   const reconnect = async () => {
     if (clientRef.current) {

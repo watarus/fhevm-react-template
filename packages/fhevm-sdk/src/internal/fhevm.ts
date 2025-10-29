@@ -310,84 +310,14 @@ export const createFhevmInstance = async (parameters: {
     notify("sdk-initializing");
 
     // throws an error if failed
-    await fhevmInitSDK();
+    // Use thread: 1 to avoid WASM initialization errors with multi-threading
+    await fhevmInitSDK({ thread: 1 });
     throwIfAborted();
 
     notify("sdk-initialized");
   }
 
   const relayerSDK = (window as unknown as FhevmWindowType).relayerSDK;
-
-  // Check if connected to Sepolia Testnet (only for non-mock networks)
-  // Mock networks (localhost:8545, etc.) are handled above
-  const SEPOLIA_CHAIN_ID = 11155111;
-  const isMockNetwork = mockChains && Object.hasOwn(mockChains, chainId);
-
-  if (!isMockNetwork && chainId !== SEPOLIA_CHAIN_ID) {
-    // Automatically switch to Sepolia Testnet
-    console.log(`[FHEVM] Wrong network detected (chainId: ${chainId}). Switching to Sepolia...`);
-
-    // Can't switch network if provider is a string URL
-    if (typeof providerOrUrl === 'string') {
-      throwFhevmError(
-        "UNSUPPORTED_NETWORK",
-        `FHEVM is currently only supported on Sepolia Testnet (chainId: ${SEPOLIA_CHAIN_ID}). You are connected to chainId: ${chainId}. Cannot automatically switch network when using RPC URL provider. Please connect with a wallet provider.`
-      );
-    }
-
-    try {
-      // Try to switch to Sepolia
-      await providerOrUrl.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${SEPOLIA_CHAIN_ID.toString(16)}` }], // 0xaa36a7
-      });
-
-      console.log('[FHEVM] Successfully switched to Sepolia Testnet');
-
-      // Refresh chainId after switch
-      const newChainId = await getChainId(providerOrUrl);
-      if (newChainId !== SEPOLIA_CHAIN_ID) {
-        throwFhevmError(
-          "NETWORK_SWITCH_FAILED",
-          `Failed to switch to Sepolia Testnet. Current chainId: ${newChainId}`
-        );
-      }
-    } catch (switchError: any) {
-      // This error code indicates that the chain has not been added to the wallet
-      if (switchError.code === 4902) {
-        console.log('[FHEVM] Sepolia not found in wallet. Adding network...');
-        try {
-          await providerOrUrl.request({
-            method: 'wallet_addEthereumChain',
-            params: [
-              {
-                chainId: `0x${SEPOLIA_CHAIN_ID.toString(16)}`,
-                chainName: 'Sepolia Testnet',
-                nativeCurrency: {
-                  name: 'Sepolia ETH',
-                  symbol: 'ETH',
-                  decimals: 18,
-                },
-                rpcUrls: ['https://eth-sepolia.public.blastapi.io'],
-                blockExplorerUrls: ['https://sepolia.etherscan.io'],
-              },
-            ],
-          });
-          console.log('[FHEVM] Successfully added and switched to Sepolia Testnet');
-        } catch (addError) {
-          throwFhevmError(
-            "NETWORK_ADD_FAILED",
-            `Failed to add Sepolia Testnet to wallet: ${addError instanceof Error ? addError.message : String(addError)}`
-          );
-        }
-      } else {
-        throwFhevmError(
-          "NETWORK_SWITCH_REJECTED",
-          `User rejected network switch or switch failed: ${switchError.message || String(switchError)}`
-        );
-      }
-    }
-  }
 
   const aclAddress = relayerSDK.SepoliaConfig.aclContractAddress;
   if (!checkIsAddress(aclAddress)) {

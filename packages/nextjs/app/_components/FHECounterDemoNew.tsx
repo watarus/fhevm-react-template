@@ -3,6 +3,7 @@
 import { useAccount } from "wagmi";
 import { RainbowKitCustomConnectButton } from "~~/components/helper/RainbowKitCustomConnectButton";
 import { useFHECounterNew } from "~~/hooks/fhecounter-example/useFHECounterNew";
+import { getMockChains } from "~~/config/fhevm";
 
 /*
  * NEW API FHECounter React component demonstrating Universal FHEVM SDK
@@ -15,6 +16,10 @@ import { useFHECounterNew } from "~~/hooks/fhecounter-example/useFHECounterNew";
  *
  * Same UX, cleaner code!
  */
+
+// Get mock chains configuration based on environment variable
+const INITIAL_MOCK_CHAINS = getMockChains();
+
 export const FHECounterDemoNew = () => {
   const { isConnected, chain } = useAccount();
 
@@ -28,10 +33,8 @@ export const FHECounterDemoNew = () => {
   // - useDecrypt() - Automatic staleness detection
   //////////////////////////////////////////////////////////////////////////////
 
-  const initialMockChains = { 31337: "http://localhost:8545" };
-
   const fheCounter = useFHECounterNew({
-    initialMockChains,
+    initialMockChains: INITIAL_MOCK_CHAINS,
   });
 
   //////////////////////////////////////////////////////////////////////////////
