@@ -1,6 +1,6 @@
-# Migration Guide: v0.1.0 → v0.2.0
+# Migration Guide to Universal FHEVM SDK v0.1.0
 
-This guide helps you migrate from the old FHEVM SDK to the new universal SDK architecture.
+This guide helps you migrate from the legacy FHEVM SDK API to the new universal SDK architecture.
 
 ## 📋 Table of Contents
 
@@ -19,17 +19,18 @@ This guide helps you migrate from the old FHEVM SDK to the new universal SDK arc
 
 The SDK has been refactored into a **universal, framework-agnostic architecture**:
 
-**Before (v0.1.0):**
+**Before (Legacy):**
 ```
 @fhevm-sdk
 └── Everything bundled together
 ```
 
-**After (v0.2.0):**
+**After (v0.1.0 - Universal SDK):**
 ```
 @fhevm-sdk
 ├── /core      → Framework-agnostic
 ├── /react     → React hooks
+├── /vue       → Vue composables
 ├── /storage   → Storage utilities
 └── /types     → TypeScript types
 ```
@@ -154,16 +155,16 @@ function MyComponent() {
 
 #### Parameter Changes
 
-| Old (v0.1.0) | New (v0.2.0) | Status | Notes |
-|--------------|--------------|--------|-------|
+| Legacy API | Universal SDK (v0.1.0) | Status | Notes |
+|------------|------------------------|--------|-------|
 | `provider` | `network` | ✅ Both work | `network` is more accurate |
 | `initialMockChains` | `mockChains` | ✅ Both work | Shorter name |
 | `enabled` | _(removed)_ | ⚠️ Ignored | Always enabled now |
 
 #### Return Value Changes
 
-| Old (v0.1.0) | New (v0.2.0) | Status | Notes |
-|--------------|--------------|--------|-------|
+| Legacy API | Universal SDK (v0.1.0) | Status | Notes |
+|------------|------------------------|--------|-------|
 | `refresh` | `reconnect` | ✅ Both work | `reconnect` is more explicit |
 | `status` | `status` | ✅ Same | More granular states |
 | `instance` | `instance` | ✅ Same | No changes |
@@ -172,13 +173,13 @@ function MyComponent() {
 
 #### Status Values
 
-**Old (v0.1.0):**
+**Legacy API:**
 - `idle`
 - `loading`
 - `ready`
 - `error`
 
-**New (v0.2.0):**
+**Universal SDK (v0.1.0):**
 - `idle`
 - `connecting`
 - `sdk-loading` _(new)_
@@ -252,7 +253,7 @@ console.log(results[handle]); // Access result
 
 ### Example 1: Basic Migration
 
-**Before (v0.1.0):**
+**Before (Legacy API):**
 
 ```typescript
 import { useFhevm } from '@fhevm-sdk';
@@ -268,7 +269,7 @@ function App() {
 }
 ```
 
-**After (v0.2.0) - Minimal changes:**
+**After (Universal SDK v0.1.0) - Minimal changes:**
 
 ```typescript
 import { useFhevm } from '@fhevm-sdk/react';
@@ -286,7 +287,7 @@ function App() {
 
 ### Example 2: Encryption Migration
 
-**Before (v0.1.0):**
+**Before (Legacy API):**
 
 ```typescript
 import { useFhevm } from '@fhevm-sdk';
@@ -309,7 +310,7 @@ function EncryptComponent() {
 }
 ```
 
-**After (v0.2.0) - Using new hooks:**
+**After (Universal SDK v0.1.0) - Using new hooks:**
 
 ```typescript
 import { useFhevm, useEncrypt } from '@fhevm-sdk/react';
@@ -341,7 +342,7 @@ function EncryptComponent() {
 
 ### Example 3: Decryption Migration
 
-**Before (v0.1.0):**
+**Before (Legacy API):**
 
 ```typescript
 import { useFhevm, FhevmDecryptionSignature } from '@fhevm-sdk';
@@ -383,7 +384,7 @@ function DecryptComponent() {
 }
 ```
 
-**After (v0.2.0) - Using new hooks:**
+**After (Universal SDK v0.1.0) - Using new hooks:**
 
 ```typescript
 import { useFhevm, useDecrypt } from '@fhevm-sdk/react';
@@ -459,7 +460,10 @@ await client.connect();
 
 ### Q: Can I use the new SDK with Vue or Svelte?
 
-**A:** Yes! Use `@fhevm-sdk/core` which is framework-agnostic. Vue composables and Svelte stores are coming soon.
+**A:** Yes!
+- **Vue 3**: Use `@fhevm-sdk/vue` for Composition API composables (✅ Available now!)
+- **Svelte**: Use `@fhevm-sdk/core` which is framework-agnostic (Svelte stores coming soon)
+- **Other frameworks**: Use `@fhevm-sdk/core` directly
 
 ### Q: Where can I get help?
 
