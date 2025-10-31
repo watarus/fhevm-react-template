@@ -6,24 +6,32 @@
  */
 
 // Composables
-export { useFhevm, type UseFhevmResult } from './composables/useFhevm';
-export { useEncrypt, type UseEncryptParams, type UseEncryptResult } from './composables/useEncrypt';
-export { useDecrypt, type UseDecryptParams, type UseDecryptResult } from './composables/useDecrypt';
+export {
+  useDecrypt,
+  type UseDecryptParams,
+  type UseDecryptResult,
+} from "./composables/useDecrypt";
+export {
+  useEncrypt,
+  type UseEncryptParams,
+  type UseEncryptResult,
+} from "./composables/useEncrypt";
+export { useFhevm, type UseFhevmResult } from "./composables/useFhevm";
 
 // Re-export core utilities for convenience
 export {
+  buildParamsFromAbi,
   createFhevmClient,
   getEncryptionMethod,
   toHex,
-  buildParamsFromAbi,
-} from '../core/index';
+} from "../core/index";
 
 // Re-export types
 export type {
-  FhevmClientConfig,
-  FhevmClientStatus,
-  FhevmClient,
-  EncryptionResult,
   DecryptionRequest,
   DecryptionResults,
-} from '../core/types';
+  EncryptionResult,
+  FhevmClient,
+  FhevmClientConfig,
+  FhevmClientStatus,
+} from "../core/types";

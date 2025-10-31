@@ -6,8 +6,8 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-import { JsonRpcProvider } from "ethers";
 import { MockFhevmInstance } from "@fhevm/mock-utils";
+import { JsonRpcProvider } from "ethers";
 import { FhevmInstance } from "../../fhevmTypes";
 
 export const fhevmMockCreateInstance = async (parameters: {
@@ -41,9 +41,9 @@ export const fhevmMockCreateInstance = async (parameters: {
     "createEncryptedInput" in instance &&
     typeof (instance as any).createEncryptedInput === "function"
   ) {
-    (instance as any).createEncryptedInput = (instance as any).createEncryptedInput.bind(
-      instance,
-    );
+    (instance as any).createEncryptedInput = (
+      instance as any
+    ).createEncryptedInput.bind(instance);
   }
   return instance;
 };

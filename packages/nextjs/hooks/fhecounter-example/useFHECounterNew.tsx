@@ -3,14 +3,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDeployedContractInfo } from "../helper";
 import { useWagmiEthers } from "../wagmi/useWagmiEthers";
-import { useFhevm, useEncrypt, useDecrypt } from "@fhevm-sdk/react";
-import { buildParamsFromAbi, getEncryptionMethod } from "@fhevm-sdk/core";
 import { useInMemoryStorage } from "@fhevm-sdk";
+import { buildParamsFromAbi, getEncryptionMethod } from "@fhevm-sdk/core";
+import { useDecrypt, useEncrypt, useFhevm } from "@fhevm-sdk/react";
 import { ethers } from "ethers";
+import type { Abi, AbiFunction } from "viem";
+import { useReadContract } from "wagmi";
 import type { Contract } from "~~/utils/helper/contract";
 import type { AllowedChainIds } from "~~/utils/helper/networks";
-import { useReadContract } from "wagmi";
-import type { Abi, AbiFunction } from "viem";
 
 /**
  * useFHECounterNew - FHE Counter hook using NEW Universal FHEVM SDK API
@@ -24,18 +24,21 @@ import type { Abi, AbiFunction } from "viem";
  * OLD: Manually manage instance, pass everywhere
  * NEW: Hooks manage lifecycle, automatic status tracking
  */
-export const useFHECounterNew = (parameters: {
-  initialMockChains?: Readonly<Record<number, string>>;
-}) => {
+export const useFHECounterNew = (parameters: { initialMockChains?: Readonly<Record<number, string>> }) => {
   const { initialMockChains } = parameters;
   const { storage: fhevmDecryptionSignatureStorage } = useInMemoryStorage();
 
   // Wagmi interop
-  const { chainId, accounts, isConnected, fhevmProvider, ethersReadonlyProvider, ethersSigner } = useWagmiEthers(initialMockChains);
+  const { chainId, accounts, isConnected, fhevmProvider, ethersReadonlyProvider, ethersSigner } =
+    useWagmiEthers(initialMockChains);
 
   // NEW API: useFhevm() with Wagmi WalletClient support (zero-config!)
   // fhevmProvider returns EIP-1193 provider or RPC URL string - perfect for FHEVM SDK!
-  const { instance, status: fhevmStatus, error: fhevmError } = useFhevm({
+  const {
+    instance,
+    status: fhevmStatus,
+    error: fhevmError,
+  } = useFhevm({
     network: fhevmProvider,
     chainId: chainId as number | undefined,
     mockChains: initialMockChains,
@@ -71,18 +74,12 @@ export const useFHECounterNew = (parameters: {
     if (!hasContract) return undefined;
     const providerOrSigner = mode === "read" ? ethersReadonlyProvider : ethersSigner;
     if (!providerOrSigner) return undefined;
-    return new ethers.Contract(
-      fheCounter!.address,
-      (fheCounter as FHECounterInfo).abi,
-      providerOrSigner,
-    );
+    return new ethers.Contract(fheCounter!.address, (fheCounter as FHECounterInfo).abi, providerOrSigner);
   };
 
   // Read count handle via wagmi
   const readResult = useReadContract({
-    address: (hasContract ? (fheCounter!.address as unknown as `0x${string}`) : undefined) as
-      | `0x${string}`
-      | undefined,
+    address: (hasContract ? (fheCounter!.address as unknown as `0x${string}`) : undefined) as `0x${string}` | undefined,
     abi: (hasContract ? ((fheCounter as FHECounterInfo).abi as any) : undefined) as any,
     functionName: "getCount" as const,
     query: {
@@ -151,7 +148,8 @@ export const useFHECounterNew = (parameters: {
     const functionAbi = fheCounter?.abi.find(
       (item: Abi[number]) => item.type === "function" && item.name === functionName,
     ) as AbiFunction | undefined;
-    if (!functionAbi) return { method: undefined as string | undefined, error: `Function ABI not found for ${functionName}` } as const;
+    if (!functionAbi)
+      return { method: undefined as string | undefined, error: `Function ABI not found for ${functionName}` } as const;
     if (!functionAbi.inputs || functionAbi.inputs.length === 0)
       return { method: undefined as string | undefined, error: `No inputs found for ${functionName}` } as const;
     const firstInput = functionAbi.inputs[0]!;
@@ -173,7 +171,7 @@ export const useFHECounterNew = (parameters: {
 
         setMessage(`Encrypting with ${method}...`);
         // NEW API: Builder pattern for encryption
-        const enc = await encrypt((builder) => {
+        const enc = await encrypt(builder => {
           (builder as any)[method](valueAbs);
         });
         if (!enc) return setMessage("Encryption failed");

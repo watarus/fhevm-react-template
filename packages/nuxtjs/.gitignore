@@ -1,0 +1,23 @@
+# Nuxt
+.nuxt
+.output
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules
+
+# Logs
+*.log*
+
+# Editor
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

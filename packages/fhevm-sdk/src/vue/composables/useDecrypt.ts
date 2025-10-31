@@ -4,10 +4,10 @@
  * Provides decryption functionality with automatic signature management
  */
 
-import { ref, computed, watch, type Ref, type ComputedRef } from 'vue';
-import { decrypt } from '../../core/decryption';
-import type { FhevmInstance } from '../../fhevmTypes';
-import type { DecryptionRequest, DecryptionResults } from '../../core/types';
+import { computed, ref, watch, type ComputedRef, type Ref } from "vue";
+import { decrypt } from "../../core/decryption";
+import type { DecryptionRequest, DecryptionResults } from "../../core/types";
+import type { FhevmInstance } from "../../fhevmTypes";
 
 export interface UseDecryptParams {
   /**
@@ -105,16 +105,19 @@ export function useDecrypt(params: UseDecryptParams): UseDecryptResult {
   const error = ref<string | undefined>(undefined);
 
   // Handle both Ref and plain array
-  const requests = 'value' in requestsInput ? requestsInput : ref(requestsInput);
+  const requests =
+    "value" in requestsInput ? requestsInput : ref(requestsInput);
 
   // Track if decryption is in progress
   let isDecryptingInternal = false;
-  let lastReqKey = '';
+  let lastReqKey = "";
 
   // Compute requests key for staleness detection
   const requestsKey = computed(() => {
-    if (!requests.value || requests.value.length === 0) return '';
-    const sorted = [...requests.value].sort((a, b) => a.handle.localeCompare(b.handle));
+    if (!requests.value || requests.value.length === 0) return "";
+    const sorted = [...requests.value].sort((a, b) =>
+      a.handle.localeCompare(b.handle),
+    );
     return JSON.stringify(sorted);
   });
 
@@ -126,11 +129,11 @@ export function useDecrypt(params: UseDecryptParams): UseDecryptResult {
   const canDecrypt = computed(() => {
     return Boolean(
       instance.value &&
-      signer &&
-      storage &&
-      requests.value &&
-      requests.value.length > 0 &&
-      !isDecryptingInternal
+        signer &&
+        storage &&
+        requests.value &&
+        requests.value.length > 0 &&
+        !isDecryptingInternal,
     );
   });
 
@@ -142,7 +145,7 @@ export function useDecrypt(params: UseDecryptParams): UseDecryptResult {
     isDecryptingInternal = true;
     isDecrypting.value = true;
     lastReqKey = requestsKey.value;
-    message.value = 'Decrypting...';
+    message.value = "Decrypting...";
     error.value = undefined;
 
     try {
@@ -150,27 +153,27 @@ export function useDecrypt(params: UseDecryptParams): UseDecryptResult {
         instance.value!,
         requests.value,
         signer,
-        storage
+        storage,
       );
 
       // Check if stale (requests changed during decryption)
       if (isStale()) {
-        message.value = 'Decryption cancelled (stale request)';
+        message.value = "Decryption cancelled (stale request)";
         return;
       }
 
       results.value = decrypted;
-      message.value = 'Decryption successful';
+      message.value = "Decryption successful";
     } catch (err) {
       // Check if stale
       if (isStale()) {
-        message.value = 'Decryption cancelled (stale request)';
+        message.value = "Decryption cancelled (stale request)";
         return;
       }
 
       const errMsg = err instanceof Error ? err.message : String(err);
       error.value = `Decryption failed: ${errMsg}`;
-      message.value = 'Decryption failed';
+      message.value = "Decryption failed";
     } finally {
       if (!isStale()) {
         isDecrypting.value = false;

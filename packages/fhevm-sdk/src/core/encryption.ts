@@ -3,9 +3,9 @@
  * Framework-agnostic encryption helpers
  */
 
+import type { RelayerEncryptedInput } from "@zama-fhe/relayer-sdk/web";
 import type { FhevmInstance } from "../fhevmTypes";
 import type { EncryptionResult } from "./types";
-import type { RelayerEncryptedInput } from "@zama-fhe/relayer-sdk/web";
 
 export type RelayerEncryptedInputMethod =
   | "addBool"

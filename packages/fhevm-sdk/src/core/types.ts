@@ -78,7 +78,8 @@ export type FhevmClientStatus =
 /**
  * FHEVM Client events
  */
-export interface FhevmClientEvents extends Record<string, (...args: any[]) => void> {
+export interface FhevmClientEvents
+  extends Record<string, (...args: any[]) => void> {
   /**
    * Emitted when client status changes
    */
@@ -103,7 +104,12 @@ export interface FhevmClientEvents extends Record<string, (...args: any[]) => vo
 /**
  * Event emitter interface
  */
-export interface EventEmitter<Events extends Record<string, (...args: any[]) => void> = Record<string, (...args: any[]) => void>> {
+export interface EventEmitter<
+  Events extends Record<string, (...args: any[]) => void> = Record<
+    string,
+    (...args: any[]) => void
+  >,
+> {
   on<K extends keyof Events>(event: K, listener: Events[K]): void;
   off<K extends keyof Events>(event: K, listener: Events[K]): void;
   emit<K extends keyof Events>(event: K, ...args: any[]): void;

@@ -2,20 +2,23 @@
  * FHEVM Client - Framework-agnostic FHEVM instance manager
  */
 
+import type { FhevmInstance } from "../fhevmTypes";
+import { createFhevmInstance } from "../internal/fhevm";
 import { EventEmitter } from "./EventEmitter";
 import type {
-  FhevmClient as IFhevmClient,
   FhevmClientConfig,
   FhevmClientEvents,
   FhevmClientStatus,
+  FhevmClient as IFhevmClient,
 } from "./types";
-import type { FhevmInstance } from "../fhevmTypes";
-import { createFhevmInstance } from "../internal/fhevm";
 
 /**
  * FHEVM Client implementation
  */
-export class FhevmClient extends EventEmitter<FhevmClientEvents> implements IFhevmClient {
+export class FhevmClient
+  extends EventEmitter<FhevmClientEvents>
+  implements IFhevmClient
+{
   private _status: FhevmClientStatus = "idle";
   private _chainId: number | undefined;
   private _instance: FhevmInstance | undefined;
@@ -88,7 +91,7 @@ export class FhevmClient extends EventEmitter<FhevmClientEvents> implements IFhe
             "sdk-loaded": "sdk-loading",
             "sdk-initializing": "sdk-initializing",
             "sdk-initialized": "sdk-initializing",
-            "creating": "creating-instance",
+            creating: "creating-instance",
           };
 
           const clientStatus = statusMap[status];

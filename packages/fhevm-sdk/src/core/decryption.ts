@@ -3,11 +3,11 @@
  * Framework-agnostic decryption helpers
  */
 
-import type { FhevmInstance, HandleContractPair } from "../fhevmTypes";
-import type { DecryptionRequest, DecryptionResults } from "./types";
-import { FhevmDecryptionSignature } from "../FhevmDecryptionSignature";
-import type { GenericStringStorage } from "../storage/GenericStringStorage";
 import type { ethers } from "ethers";
+import { FhevmDecryptionSignature } from "../FhevmDecryptionSignature";
+import type { FhevmInstance, HandleContractPair } from "../fhevmTypes";
+import type { GenericStringStorage } from "../storage/GenericStringStorage";
+import type { DecryptionRequest, DecryptionResults } from "./types";
 
 /**
  * Decrypt FHE-encrypted values from smart contracts
@@ -31,7 +31,7 @@ export async function decrypt(
   instance: FhevmInstance,
   requests: readonly DecryptionRequest[],
   signer: ethers.JsonRpcSigner,
-  storage: GenericStringStorage
+  storage: GenericStringStorage,
 ): Promise<DecryptionResults> {
   if (!instance || !signer || requests.length === 0) {
     return {};
@@ -39,7 +39,7 @@ export async function decrypt(
 
   // Extract unique contract addresses
   const contractAddresses = Array.from(
-    new Set(requests.map(r => r.contractAddress))
+    new Set(requests.map((r) => r.contractAddress)),
   );
 
   // Get or create decryption signature (EIP-712)
@@ -47,7 +47,7 @@ export async function decrypt(
     instance,
     contractAddresses,
     signer,
-    storage
+    storage,
   );
 
   if (!signature) {
@@ -55,7 +55,7 @@ export async function decrypt(
   }
 
   // Prepare requests for userDecrypt
-  const handleContractPairs: HandleContractPair[] = requests.map(r => ({
+  const handleContractPairs: HandleContractPair[] = requests.map((r) => ({
     handle: r.handle,
     contractAddress: r.contractAddress,
   }));
@@ -69,7 +69,7 @@ export async function decrypt(
     signature.contractAddresses,
     signature.userAddress,
     signature.startTimestamp,
-    signature.durationDays
+    signature.durationDays,
   );
 
   return decrypted as DecryptionResults;
@@ -88,15 +88,16 @@ export async function hasValidSignature(
   instance: FhevmInstance,
   contractAddresses: string[],
   userAddress: string,
-  storage: GenericStringStorage
+  storage: GenericStringStorage,
 ): Promise<boolean> {
   try {
-    const signature = await FhevmDecryptionSignature.loadFromGenericStringStorage(
-      storage,
-      instance,
-      contractAddresses,
-      userAddress
-    );
+    const signature =
+      await FhevmDecryptionSignature.loadFromGenericStringStorage(
+        storage,
+        instance,
+        contractAddresses,
+        userAddress,
+      );
 
     return signature !== null && signature.isValid();
   } catch {

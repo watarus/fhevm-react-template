@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { ethers } from "ethers";
-import { useAccount, useWalletClient, useConfig } from "wagmi";
+import { useAccount, useConfig, useWalletClient } from "wagmi";
 
 export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, string>>) => {
   const { address, isConnected, chain } = useAccount();
@@ -10,7 +10,7 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
   const wagmiConfig = useConfig();
 
   // Determine chainId: use connected chain, or fallback to first configured chain
-  const chainId = chain?.id ?? walletClient?.chain?.id ?? (wagmiConfig.chains?.[0]?.id);
+  const chainId = chain?.id ?? walletClient?.chain?.id ?? wagmiConfig.chains?.[0]?.id;
 
   // Stabilize accounts array reference to prevent unnecessary re-renders
   const accounts = useMemo(() => {
@@ -73,7 +73,7 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
     if (chains && chains.length > 0) {
       // Use the connected chain if available, otherwise use the first configured chain
       const targetChainId = chainId || chains[0].id;
-      const targetChain = chains.find((c) => c.id === targetChainId);
+      const targetChain = chains.find(c => c.id === targetChainId);
       if (targetChain?.rpcUrls?.default?.http?.[0]) {
         return new ethers.JsonRpcProvider(targetChain.rpcUrls.default.http[0]);
       }
@@ -101,7 +101,7 @@ export const useWagmiEthers = (initialMockChains?: Readonly<Record<number, strin
     const chains = chainsRef.current;
     if (chains && chains.length > 0) {
       const targetChainId = chainId || chains[0].id;
-      const targetChain = chains.find((c) => c.id === targetChainId);
+      const targetChain = chains.find(c => c.id === targetChainId);
       if (targetChain?.rpcUrls?.default?.http?.[0]) {
         return targetChain.rpcUrls.default.http[0];
       }

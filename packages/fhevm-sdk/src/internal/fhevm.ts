@@ -1,13 +1,13 @@
-import { isAddress, Eip1193Provider, JsonRpcProvider } from "ethers";
+import { Eip1193Provider, isAddress, JsonRpcProvider } from "ethers";
+import { FhevmInstance, FhevmInstanceConfig } from "../fhevmTypes";
 import type {
   FhevmInitSDKOptions,
   FhevmInitSDKType,
   FhevmLoadSDKType,
   FhevmWindowType,
 } from "./fhevmTypes";
+import { publicKeyStorageSet } from "./PublicKeyStorage";
 import { isFhevmWindowType, RelayerSDKLoader } from "./RelayerSDKLoader";
-import { publicKeyStorageGet, publicKeyStorageSet } from "./PublicKeyStorage";
-import { FhevmInstance, FhevmInstanceConfig } from "../fhevmTypes";
 
 export class FhevmReactError extends Error {
   code: string;
@@ -21,7 +21,7 @@ export class FhevmReactError extends Error {
 function throwFhevmError(
   code: string,
   message?: string,
-  cause?: unknown
+  cause?: unknown,
 ): never {
   throw new FhevmReactError(code, message, cause ? { cause } : undefined);
 }
@@ -39,7 +39,7 @@ const fhevmLoadSDK: FhevmLoadSDKType = () => {
 };
 
 const fhevmInitSDK: FhevmInitSDKType = async (
-  options?: FhevmInitSDKOptions
+  options?: FhevmInitSDKOptions,
 ) => {
   if (!isFhevmWindowType(window, console.log)) {
     throw new Error("window.relayerSDK is not available");
@@ -77,7 +77,7 @@ type FhevmRelayerStatusType =
   | "creating";
 
 async function getChainId(
-  providerOrUrl: Eip1193Provider | string
+  providerOrUrl: Eip1193Provider | string,
 ): Promise<number> {
   if (typeof providerOrUrl === "string") {
     const provider = new JsonRpcProvider(providerOrUrl);
@@ -96,7 +96,7 @@ async function getWeb3Client(rpcUrl: string) {
     throwFhevmError(
       "WEB3_CLIENTVERSION_ERROR",
       `The URL ${rpcUrl} is not a Web3 node or is not reachable. Please check the endpoint.`,
-      e
+      e,
     );
   } finally {
     rpc.destroy();
@@ -167,7 +167,7 @@ async function getFHEVMRelayerMetadata(rpcUrl: string) {
     throwFhevmError(
       "FHEVM_RELAYER_METADATA_ERROR",
       `The URL ${rpcUrl} is not a FHEVM Hardhat node or is not reachable. Please check the endpoint.`,
-      e
+      e,
     );
   } finally {
     rpc.destroy();
@@ -180,7 +180,7 @@ type ResolveResult = MockResolveResult | GenericResolveResult;
 
 async function resolve(
   providerOrUrl: Eip1193Provider | string,
-  mockChains?: Record<number, string>
+  mockChains?: Record<number, string>,
 ): Promise<ResolveResult> {
   // Resolve chainId
   const chainId = await getChainId(providerOrUrl);
@@ -224,7 +224,13 @@ function normalizeProvider(provider: any): Eip1193Provider | string {
   // Wrap it to provide .request() interface
   if (provider && typeof provider === "object" && "send" in provider) {
     return {
-      request: async ({ method, params }: { method: string; params?: any[] }) => {
+      request: async ({
+        method,
+        params,
+      }: {
+        method: string;
+        params?: any[];
+      }) => {
         return await provider.send(method, params || []);
       },
     } as Eip1193Provider;
@@ -232,7 +238,7 @@ function normalizeProvider(provider: any): Eip1193Provider | string {
 
   throw new Error(
     "Valid network provider required. " +
-      "Provide one of: Eip1193Provider, WalletClient, ethers.BrowserProvider, or RPC URL string."
+      "Provide one of: Eip1193Provider, WalletClient, ethers.BrowserProvider, or RPC URL string.",
   );
 }
 
@@ -250,12 +256,7 @@ export const createFhevmInstance = async (parameters: {
     if (onStatusChange) onStatusChange(status);
   };
 
-  const {
-    signal,
-    onStatusChange,
-    provider,
-    mockChains,
-  } = parameters;
+  const { signal, onStatusChange, provider, mockChains } = parameters;
 
   // Normalize provider (supports WalletClient, Eip1193Provider, string)
   const providerOrUrl = normalizeProvider(provider);
@@ -273,11 +274,11 @@ export const createFhevmInstance = async (parameters: {
       notify("creating");
 
       //////////////////////////////////////////////////////////////////////////
-      // 
+      //
       // WARNING!!
-      // ALWAY USE DYNAMIC IMPORT TO AVOID INCLUDING THE ENTIRE FHEVM MOCK LIB 
+      // ALWAY USE DYNAMIC IMPORT TO AVOID INCLUDING THE ENTIRE FHEVM MOCK LIB
       // IN THE FINAL PRODUCTION BUNDLE!!
-      // 
+      //
       //////////////////////////////////////////////////////////////////////////
       const fhevmMock = await import("./mock/fhevmMock");
       const mockInstance = await fhevmMock.fhevmMockCreateInstance({
@@ -342,7 +343,7 @@ export const createFhevmInstance = async (parameters: {
   await publicKeyStorageSet(
     aclAddress,
     instance.getPublicKey(),
-    instance.getPublicParams(2048)
+    instance.getPublicParams(2048),
   );
 
   throwIfAborted();

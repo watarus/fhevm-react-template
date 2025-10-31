@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+@source "../components/**/*.vue";
+@source "../layouts/**/*.vue";
+@source "../pages/**/*.vue";
+@source "../app.vue";

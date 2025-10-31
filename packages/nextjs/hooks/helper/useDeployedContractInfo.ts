@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useIsMounted } from "usehooks-ts";
 import { usePublicClient } from "wagmi";
+import { getContractAddress } from "~~/config/fhevm";
 import { useSelectedNetwork } from "~~/hooks/helper";
 import {
   Contract,
@@ -9,7 +10,6 @@ import {
   UseDeployedContractConfig,
   contracts,
 } from "~~/utils/helper/contract";
-import { getContractAddress } from "~~/config/fhevm";
 
 type DeployedContractData<TContractName extends ContractName> = {
   data: Contract<TContractName> | undefined;

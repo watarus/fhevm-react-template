@@ -4,10 +4,21 @@
  * Manages FHEVM instance lifecycle in Vue applications
  */
 
-import { ref, shallowRef, onMounted, onUnmounted, watch, type Ref, type ShallowRef } from 'vue';
-import { createFhevmClient, type FhevmClient } from '../../core/client';
-import type { FhevmClientConfig, FhevmClientStatus } from '../../core/types';
-import type { FhevmInstance } from '../../fhevmTypes';
+import {
+  computed,
+  markRaw,
+  onMounted,
+  onUnmounted,
+  ref,
+  shallowRef,
+  unref,
+  watch,
+  type Ref,
+  type ShallowRef,
+} from "vue";
+import { createFhevmClient, type FhevmClient } from "../../core/client";
+import type { FhevmClientConfig, FhevmClientStatus } from "../../core/types";
+import type { FhevmInstance } from "../../fhevmTypes";
 
 export interface UseFhevmResult {
   /**
@@ -64,20 +75,37 @@ export interface UseFhevmResult {
  * ```
  */
 export function useFhevm(
-  config: FhevmClientConfig | { provider?: any; initialMockChains?: any; enabled?: boolean; [key: string]: any }
+  config:
+    | FhevmClientConfig
+    | {
+        provider?: any;
+        initialMockChains?: any;
+        enabled?: boolean;
+        [key: string]: any;
+      },
 ): UseFhevmResult {
-  const instance = ref<FhevmInstance | undefined>(undefined);
-  const status = ref<FhevmClientStatus>('idle');
+  const instance = shallowRef<FhevmInstance | undefined>(undefined);
+  const status = ref<FhevmClientStatus>("idle");
   const error = ref<Error | undefined>(undefined);
   const client = shallowRef<FhevmClient | undefined>(undefined);
 
-  // Normalize config to support both old API (provider, initialMockChains) and new API (network, mockChains)
-  const normalizedConfig: FhevmClientConfig = {
-    network: (config as any).network || (config as any).provider,
-    chainId: config.chainId,
-    mockChains: (config as any).mockChains || (config as any).initialMockChains,
-    debug: config.debug,
-  };
+  // SSR guard: Skip client initialization on server (check for browser environment)
+  if (typeof window === "undefined") {
+    return {
+      instance,
+      status,
+      error,
+      client,
+      reconnect: async () => {},
+      refresh: () => {},
+    };
+  }
+
+  // Create reactive computed for network that resolves refs
+  const network = computed(
+    () => unref((config as any).network) ?? unref((config as any).provider),
+  );
+  const chainId = computed(() => unref(config.chainId));
 
   const reconnect = async () => {
     if (client.value) {
@@ -88,40 +116,74 @@ export function useFhevm(
   // Alias for backward compatibility
   const refresh = () => {
     reconnect().catch((err) => {
-      console.error('[useFhevm] Refresh failed:', err);
+      console.error("[useFhevm] Refresh failed:", err);
     });
   };
 
+  // Watch for network to become available, then create client
+  // Only run on client side to avoid SSR hydration mismatch
   onMounted(() => {
-    // Create client
-    const fhevmClient = createFhevmClient(normalizedConfig);
-    client.value = fhevmClient;
+    watch(
+      network,
+      (resolvedNetwork: string | any | undefined) => {
+        // Wait until network is resolved
+        if (!resolvedNetwork) {
+          console.log("[useFhevm] Waiting for network provider...");
+          return;
+        }
 
-    // Set up event listeners
-    fhevmClient.on('statusChange', (s) => {
-      status.value = s;
-    });
+        // Normalize config with resolved values
+        const normalizedConfig: FhevmClientConfig = {
+          network: resolvedNetwork,
+          chainId: chainId.value,
+          mockChains:
+            (config as any).mockChains || (config as any).initialMockChains,
+          debug: config.debug,
+        };
 
-    fhevmClient.on('ready', (inst) => {
-      instance.value = inst;
-      error.value = undefined;
-    });
+        console.log(
+          "[useFhevm] Creating client with network:",
+          typeof resolvedNetwork,
+          resolvedNetwork,
+        );
+        console.log(
+          "[useFhevm] normalizedConfig:",
+          JSON.stringify(normalizedConfig),
+        );
 
-    fhevmClient.on('error', (err) => {
-      error.value = err;
-      instance.value = undefined;
-    });
+        // Create client
+        const fhevmClient = markRaw(createFhevmClient(normalizedConfig));
+        console.log("[useFhevm] Client created successfully");
+        client.value = fhevmClient;
 
-    fhevmClient.on('disconnect', () => {
-      instance.value = undefined;
-      error.value = undefined;
-    });
+        // Set up event listeners
+        fhevmClient.on("statusChange", (s) => {
+          status.value = s;
+        });
 
-    // Start connection
-    fhevmClient.connect().catch((err) => {
-      // Error is already handled by 'error' event
-      console.error('[useFhevm] Connection failed:', err);
-    });
+        fhevmClient.on("ready", (inst) => {
+          instance.value = markRaw(inst);
+          error.value = undefined;
+        });
+
+        fhevmClient.on("error", (err) => {
+          error.value = err;
+          instance.value = undefined;
+        });
+
+        fhevmClient.on("disconnect", () => {
+          instance.value = undefined;
+          error.value = undefined;
+        });
+
+        // Start connection
+        fhevmClient.connect().catch((err) => {
+          // Error is already handled by 'error' event
+          console.error("[useFhevm] Connection failed:", err);
+        });
+      },
+      { immediate: true, flush: "post" },
+    );
   });
 
   onUnmounted(() => {

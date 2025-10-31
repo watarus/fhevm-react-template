@@ -1,7 +1,7 @@
+import { ethers } from "ethers";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FhevmInstance } from "../fhevmTypes.js";
 import { createFhevmInstance } from "../internal/fhevm.js";
-import { ethers } from "ethers";
 
 function _assert(condition: boolean, message?: string): asserts condition {
   if (!condition) {
@@ -25,15 +25,21 @@ export function useFhevm(parameters: {
 } {
   const { provider, chainId, initialMockChains, enabled = true } = parameters;
 
-  const [instance, _setInstance] = useState<FhevmInstance | undefined>(undefined);
+  const [instance, _setInstance] = useState<FhevmInstance | undefined>(
+    undefined,
+  );
   const [status, _setStatus] = useState<FhevmGoState>("idle");
   const [error, _setError] = useState<Error | undefined>(undefined);
   const [_isRunning, _setIsRunning] = useState<boolean>(enabled);
   const [_providerChanged, _setProviderChanged] = useState<number>(0);
   const _abortControllerRef = useRef<AbortController | null>(null);
-  const _providerRef = useRef<string | ethers.Eip1193Provider | undefined>(provider);
+  const _providerRef = useRef<string | ethers.Eip1193Provider | undefined>(
+    provider,
+  );
   const _chainIdRef = useRef<number | undefined>(chainId);
-  const _mockChainsRef = useRef<Record<number, string> | undefined>(initialMockChains as any);
+  const _mockChainsRef = useRef<Record<number, string> | undefined>(
+    initialMockChains as any,
+  );
 
   const refresh = useCallback(() => {
     if (_abortControllerRef.current) {
@@ -52,7 +58,7 @@ export function useFhevm(parameters: {
     _setStatus("idle");
 
     if (provider !== undefined) {
-      _setProviderChanged(prev => prev + 1);
+      _setProviderChanged((prev) => prev + 1);
     }
   }, [provider, chainId]);
 
@@ -88,7 +94,10 @@ export function useFhevm(parameters: {
         _abortControllerRef.current = new AbortController();
       }
 
-      _assert(!_abortControllerRef.current.signal.aborted, "!controllerRef.current.signal.aborted");
+      _assert(
+        !_abortControllerRef.current.signal.aborted,
+        "!controllerRef.current.signal.aborted",
+      );
 
       _setStatus("loading");
       _setError(undefined);
@@ -101,20 +110,27 @@ export function useFhevm(parameters: {
         signal: thisSignal,
         provider: thisProvider as any,
         mockChains: thisRpcUrlsByChainId as any,
-        onStatusChange: s => console.log(`[useFhevm] createFhevmInstance status changed: ${s}`),
+        onStatusChange: (s) =>
+          console.log(`[useFhevm] createFhevmInstance status changed: ${s}`),
       })
-        .then(i => {
+        .then((i) => {
           if (thisSignal.aborted) return;
-          _assert(thisProvider === _providerRef.current, "thisProvider === _providerRef.current");
+          _assert(
+            thisProvider === _providerRef.current,
+            "thisProvider === _providerRef.current",
+          );
 
           _setInstance(i);
           _setError(undefined);
           _setStatus("ready");
         })
-        .catch(e => {
+        .catch((e) => {
           if (thisSignal.aborted) return;
 
-          _assert(thisProvider === _providerRef.current, "thisProvider === _providerRef.current");
+          _assert(
+            thisProvider === _providerRef.current,
+            "thisProvider === _providerRef.current",
+          );
 
           _setInstance(undefined);
           _setError(e as any);
@@ -125,4 +141,3 @@ export function useFhevm(parameters: {
 
   return { instance, refresh, error, status };
 }
-

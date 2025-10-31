@@ -6,29 +6,40 @@
  */
 
 // Hooks
+export {
+  useDecrypt,
+  type UseDecryptParams,
+  type UseDecryptResult,
+} from "./hooks/useDecrypt";
+export {
+  useEncrypt,
+  type UseEncryptParams,
+  type UseEncryptResult,
+} from "./hooks/useEncrypt";
 export { useFhevm, type UseFhevmResult } from "./hooks/useFhevm";
-export { useEncrypt, type UseEncryptParams, type UseEncryptResult } from "./hooks/useEncrypt";
-export { useDecrypt, type UseDecryptParams, type UseDecryptResult } from "./hooks/useDecrypt";
 
 // Storage (Context provider)
-export { useInMemoryStorage, InMemoryStorageProvider } from "./useInMemoryStorage";
+export {
+  InMemoryStorageProvider,
+  useInMemoryStorage,
+} from "./useInMemoryStorage";
 
 // Re-export core utilities for convenience
 export {
+  buildParamsFromAbi,
   createFhevmClient,
   getEncryptionMethod,
   toHex,
-  buildParamsFromAbi,
 } from "../core/index";
 
 // Re-export types
 export type {
+  DecryptionRequest,
+  DecryptionResults,
+  EncryptionResult,
   FhevmClient,
   FhevmClientConfig,
   FhevmClientStatus,
   FhevmInstance,
-  EncryptionResult,
-  DecryptionRequest,
-  DecryptionResults,
   GenericStringStorage,
 } from "../core/index";

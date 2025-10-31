@@ -18,14 +18,14 @@ const nextConfig: NextConfig = {
     config.cache = false;
 
     // Add aliases for @fhevm-sdk subpath exports
-    const fhevmSdkPath = path.resolve(__dirname, '../fhevm-sdk/dist');
+    const fhevmSdkPath = path.resolve(__dirname, "../fhevm-sdk/dist");
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@fhevm-sdk/react$': path.join(fhevmSdkPath, 'react/index.js'),
-      '@fhevm-sdk/core$': path.join(fhevmSdkPath, 'core/index.js'),
-      '@fhevm-sdk/storage$': path.join(fhevmSdkPath, 'storage/index.js'),
-      '@fhevm-sdk/types$': path.join(fhevmSdkPath, 'fhevmTypes.js'),
-      '@fhevm-sdk/vue$': path.join(fhevmSdkPath, 'vue/index.js'),
+      "@fhevm-sdk/react$": path.join(fhevmSdkPath, "react/index.js"),
+      "@fhevm-sdk/core$": path.join(fhevmSdkPath, "core/index.js"),
+      "@fhevm-sdk/storage$": path.join(fhevmSdkPath, "storage/index.js"),
+      "@fhevm-sdk/types$": path.join(fhevmSdkPath, "fhevmTypes.js"),
+      "@fhevm-sdk/vue$": path.join(fhevmSdkPath, "vue/index.js"),
     };
 
     return config;
@@ -33,19 +33,19 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
           },
           {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'require-corp',
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp",
           },
           {
-            key: 'Cross-Origin-Resource-Policy',
-            value: 'same-origin',
+            key: "Cross-Origin-Resource-Policy",
+            value: "same-origin",
           },
         ],
       },

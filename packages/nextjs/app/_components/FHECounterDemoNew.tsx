@@ -2,8 +2,8 @@
 
 import { useAccount } from "wagmi";
 import { RainbowKitCustomConnectButton } from "~~/components/helper/RainbowKitCustomConnectButton";
-import { useFHECounterNew } from "~~/hooks/fhecounter-example/useFHECounterNew";
 import { getMockChains } from "~~/config/fhevm";
+import { useFHECounterNew } from "~~/hooks/fhecounter-example/useFHECounterNew";
 
 /*
  * NEW API FHECounter React component demonstrating Universal FHEVM SDK

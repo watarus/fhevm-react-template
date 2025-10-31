@@ -34,4 +34,3 @@ export * from "./fhevmTypes";
 
 // Decryption signature (for advanced use cases)
 export * from "./FhevmDecryptionSignature";
-

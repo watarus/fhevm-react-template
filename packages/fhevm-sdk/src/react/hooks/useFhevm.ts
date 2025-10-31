@@ -87,9 +87,18 @@ export interface UseFhevmResult {
  * ```
  */
 export function useFhevm(
-  config: FhevmClientConfig | { provider?: any; initialMockChains?: any; enabled?: boolean; [key: string]: any }
+  config:
+    | FhevmClientConfig
+    | {
+        provider?: any;
+        initialMockChains?: any;
+        enabled?: boolean;
+        [key: string]: any;
+      },
 ): UseFhevmResult {
-  const [instance, setInstance] = useState<FhevmInstance | undefined>(undefined);
+  const [instance, setInstance] = useState<FhevmInstance | undefined>(
+    undefined,
+  );
   const [status, setStatus] = useState<FhevmClientStatus>("idle");
   const [error, setError] = useState<Error | undefined>(undefined);
   const clientRef = useRef<FhevmClient | undefined>(undefined);

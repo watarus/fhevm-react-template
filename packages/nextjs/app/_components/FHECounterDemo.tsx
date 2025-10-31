@@ -4,8 +4,8 @@ import { useMemo } from "react";
 import { useFhevm } from "@fhevm-sdk";
 import { useAccount } from "wagmi";
 import { RainbowKitCustomConnectButton } from "~~/components/helper/RainbowKitCustomConnectButton";
-import { useFHECounterWagmi } from "~~/hooks/fhecounter-example/useFHECounterWagmi";
 import { getMockChains } from "~~/config/fhevm";
+import { useFHECounterWagmi } from "~~/hooks/fhecounter-example/useFHECounterWagmi";
 
 /*
  * Main FHECounter React component with 3 buttons

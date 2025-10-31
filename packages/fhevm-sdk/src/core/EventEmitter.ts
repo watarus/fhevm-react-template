@@ -5,7 +5,10 @@
 
 type EventListener = (...args: any[]) => void;
 
-export class EventEmitter<Events extends Record<string, EventListener> = Record<string, EventListener>> implements Record<string, any> {
+export class EventEmitter<
+  Events extends Record<string, EventListener> = Record<string, EventListener>,
+> implements Record<string, any>
+{
   [key: string]: any;
   private listeners: Map<keyof Events, Set<EventListener>> = new Map();
 
@@ -48,13 +51,16 @@ export class EventEmitter<Events extends Record<string, EventListener> = Record<
   /**
    * Emit an event
    */
-  emit<K extends keyof Events>(event: K, ...args: Parameters<Events[K]>): boolean {
+  emit<K extends keyof Events>(
+    event: K,
+    ...args: Parameters<Events[K]>
+  ): boolean {
     const eventListeners = this.listeners.get(event);
     if (!eventListeners || eventListeners.size === 0) {
       return false;
     }
 
-    eventListeners.forEach(listener => {
+    eventListeners.forEach((listener) => {
       try {
         listener(...args);
       } catch (error) {

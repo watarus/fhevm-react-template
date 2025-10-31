@@ -6,12 +6,12 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { decrypt } from "../../core/decryption";
-import type { FhevmInstance } from "../../fhevmTypes";
-import type { DecryptionRequest, DecryptionResults } from "../../core/types";
-import type { GenericStringStorage } from "../../storage/GenericStringStorage";
 import type { ethers } from "ethers";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { decrypt } from "../../core/decryption";
+import type { DecryptionRequest, DecryptionResults } from "../../core/types";
+import type { FhevmInstance } from "../../fhevmTypes";
+import type { GenericStringStorage } from "../../storage/GenericStringStorage";
 
 export interface UseDecryptParams {
   /**
@@ -123,7 +123,9 @@ export function useDecrypt(params: UseDecryptParams): UseDecryptResult {
   // Compute request key for deduplication
   const requestsKey = useMemo(() => {
     if (!requests || requests.length === 0) return "";
-    const sorted = [...requests].sort((a, b) => a.handle.localeCompare(b.handle));
+    const sorted = [...requests].sort((a, b) =>
+      a.handle.localeCompare(b.handle),
+    );
     return JSON.stringify(sorted);
   }, [requests]);
 
@@ -134,7 +136,7 @@ export function useDecrypt(params: UseDecryptParams): UseDecryptResult {
         storage &&
         chainId &&
         requests &&
-        requests.length > 0
+        requests.length > 0,
     );
   }, [instance, signer, storage, chainId, requests]);
 
@@ -144,7 +146,13 @@ export function useDecrypt(params: UseDecryptParams): UseDecryptResult {
   }, [requestsKey]);
 
   const doDecrypt = useCallback(async () => {
-    if (!canDecrypt || !instance || !signer || !requests || isDecryptingRef.current) {
+    if (
+      !canDecrypt ||
+      !instance ||
+      !signer ||
+      !requests ||
+      isDecryptingRef.current
+    ) {
       return;
     }
 

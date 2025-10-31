@@ -1,4 +1,4 @@
-import { openDB, DBSchema, IDBPDatabase } from "idb";
+import { DBSchema, IDBPDatabase, openDB } from "idb";
 
 type FhevmStoredPublicKey = {
   publicKeyId: string;
@@ -62,7 +62,7 @@ type FhevmInstanceConfigPublicParams = {
 };
 
 function assertFhevmStoredPublicKey(
-  value: unknown
+  value: unknown,
 ): asserts value is FhevmStoredPublicKey | null {
   if (typeof value !== "object") {
     throw new Error(`FhevmStoredPublicKey must be an object`);
@@ -85,7 +85,7 @@ function assertFhevmStoredPublicKey(
 }
 
 function assertFhevmStoredPublicParams(
-  value: unknown
+  value: unknown,
 ): asserts value is FhevmStoredPublicParams | null {
   if (typeof value !== "object") {
     throw new Error(`FhevmStoredPublicParams must be an object`);
@@ -104,7 +104,7 @@ function assertFhevmStoredPublicParams(
   }
   if (!(value.publicParams instanceof Uint8Array)) {
     throw new Error(
-      `FhevmStoredPublicParams.publicParams must be a Uint8Array`
+      `FhevmStoredPublicParams.publicParams must be a Uint8Array`,
     );
   }
 }
@@ -166,7 +166,7 @@ export async function publicKeyStorageGet(aclAddress: `0x${string}`): Promise<{
 export async function publicKeyStorageSet(
   aclAddress: `0x${string}`,
   publicKey: FhevmStoredPublicKey | null,
-  publicParams: FhevmStoredPublicParams | null
+  publicParams: FhevmStoredPublicParams | null,
 ) {
   assertFhevmStoredPublicKey(publicKey);
   assertFhevmStoredPublicParams(publicParams);

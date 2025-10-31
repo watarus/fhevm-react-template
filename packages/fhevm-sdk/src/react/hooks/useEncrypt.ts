@@ -6,12 +6,12 @@
 
 "use client";
 
-import { useCallback, useMemo } from "react";
-import { createEncryptedInput } from "../../core/encryption";
-import type { FhevmInstance } from "../../fhevmTypes";
-import type { EncryptionResult } from "../../core/types";
 import type { RelayerEncryptedInput } from "@zama-fhe/relayer-sdk/web";
 import type { ethers } from "ethers";
+import { useCallback, useMemo } from "react";
+import { createEncryptedInput } from "../../core/encryption";
+import type { EncryptionResult } from "../../core/types";
+import type { FhevmInstance } from "../../fhevmTypes";
 
 export interface UseEncryptParams {
   /**
@@ -51,7 +51,7 @@ export interface UseEncryptResult {
    * ```
    */
   encrypt: (
-    buildFn: (builder: RelayerEncryptedInput) => void
+    buildFn: (builder: RelayerEncryptedInput) => void,
   ) => Promise<EncryptionResult | undefined>;
 }
 
@@ -96,7 +96,7 @@ export function useEncrypt(params: UseEncryptParams): UseEncryptResult {
 
   const canEncrypt = useMemo(
     () => Boolean(instance && signer && contractAddress),
-    [instance, signer, contractAddress]
+    [instance, signer, contractAddress],
   );
 
   const encrypt = useCallback(
@@ -107,9 +107,14 @@ export function useEncrypt(params: UseEncryptParams): UseEncryptResult {
 
       const userAddress = await signer.getAddress();
 
-      return createEncryptedInput(instance, contractAddress, userAddress, buildFn);
+      return createEncryptedInput(
+        instance,
+        contractAddress,
+        userAddress,
+        buildFn,
+      );
     },
-    [instance, signer, contractAddress]
+    [instance, signer, contractAddress],
   );
 
   return {
