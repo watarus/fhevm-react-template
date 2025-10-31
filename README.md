@@ -9,12 +9,13 @@ FHEVM (Fully Homomorphic Encryption Virtual Machine) enables computation on encr
 ## ✨ Features
 
 - **🔐 FHEVM Integration**: Built-in support for fully homomorphic encryption
-- **🎯 Universal FHEVM SDK**: NEW! Framework-agnostic core with React & Vue.js wrappers
-- **⚛️ React + Next.js**: Modern, performant frontend framework
+- **🎯 Universal FHEVM SDK**: Framework-agnostic core with React & Vue.js wrappers
+- **⚛️ React + Next.js**: Modern Next.js demo with App Router
+- **🟢 Vue + Nuxt**: Nuxt 3 demo with Composition API
 - **🎨 Tailwind CSS**: Utility-first styling for rapid UI development
-- **🔗 RainbowKit**: Seamless wallet connection and management
-- **🌐 Multi-Network Support**: Works on both Sepolia testnet and local Hardhat node
-- **📦 Monorepo Structure**: Organized packages for SDK, contracts, and frontend
+- **🔗 Wallet Integration**: RainbowKit (React) and Wagmi composables (Vue)
+- **🌐 Multi-Network Support**: Works on Sepolia testnet and local Hardhat node
+- **📦 Monorepo Structure**: SDK, contracts, Next.js, and Nuxt apps
 
 ## 🆕 Universal FHEVM SDK
 
@@ -31,117 +32,37 @@ This template now includes the **Universal FHEVM SDK v0.1.0** - a modern, framew
 - **Automatic Signature Management**: Built-in caching and staleness detection
 - **TypeScript First**: Full type safety and IntelliSense support
 
-### Quick Example (React)
+### Quick Examples
 
+**React:**
 ```typescript
-import { useFhevm, useEncrypt, useDecrypt } from '@fhevm-sdk/react';
+import { useFhevm, useEncrypt } from '@fhevm-sdk/react';
 
-function MyComponent() {
-  // Automatic client lifecycle management
-  const { instance, status } = useFhevm({
-    network: window.ethereum,
-    chainId: 31337,
-  });
+const { instance, status } = useFhevm({ network: window.ethereum, chainId: 31337 });
+const { encrypt } = useEncrypt({ instance, signer, contractAddress });
 
-  // Builder pattern encryption
-  const { encrypt, canEncrypt } = useEncrypt({
-    instance,
-    signer: ethersSigner,
-    contractAddress: '0x...',
-  });
-
-  // Automatic staleness detection
-  const { decrypt, results } = useDecrypt({
-    instance,
-    signer: ethersSigner,
-    requests: [{ handle: '0x...', contractAddress: '0x...' }],
-    storage,
-  });
-
-  if (status === 'ready' && canEncrypt) {
-    // Encrypt with builder pattern
-    const encrypted = await encrypt((input) => {
-      input.addUint8(42);
-    });
-  }
-}
+// Encrypt with builder pattern
+const encrypted = await encrypt((input) => input.add64(42));
 ```
 
-### Quick Example (Vue)
-
+**Vue:**
 ```vue
 <script setup>
-import { useFhevm, useEncrypt, useDecrypt } from '@fhevm-sdk/vue';
-
-const { instance, status } = useFhevm({
-  network: window.ethereum,
-  chainId: 31337,
-});
-
-const { encrypt, canEncrypt } = useEncrypt({
-  instance,
-  signer: ethersSigner,
-  contractAddress: '0x...',
-});
+import { useFhevm, useEncrypt } from '@fhevm-sdk/vue';
+const { instance, status } = useFhevm({ network: window.ethereum, chainId: 31337 });
+const { encrypt } = useEncrypt({ instance, signer, contractAddress });
 </script>
-
-<template>
-  <div v-if="status === 'ready' && canEncrypt">
-    Ready to encrypt!
-  </div>
-</template>
 ```
 
-### Quick Example (Framework-Agnostic)
-
+**Framework-Agnostic:**
 ```typescript
 import { createFhevmClient } from '@fhevm-sdk/core';
-
-const client = createFhevmClient({
-  network: 'http://localhost:8545',
-  chainId: 31337,
-});
-
-client.on('ready', (instance) => {
-  console.log('FHEVM ready!', instance);
-});
-
+const client = createFhevmClient({ network: 'http://localhost:8545', chainId: 31337 });
+client.on('ready', (instance) => console.log('FHEVM ready!', instance));
 await client.connect();
 ```
 
-### SDK Package Exports
-
-The SDK is organized into multiple entry points for optimal tree-shaking:
-
-```typescript
-// Framework-agnostic core
-import { createFhevmClient, ... } from '@fhevm-sdk/core';
-
-// React hooks
-import { useFhevm, useEncrypt, useDecrypt } from '@fhevm-sdk/react';
-
-// Vue composables
-import { useFhevm, useEncrypt, useDecrypt } from '@fhevm-sdk/vue';
-
-// Storage adapters
-import { useInMemoryStorage } from '@fhevm-sdk/storage';
-```
-
-### Migration from Legacy API
-
-If you're using the old API, see [MIGRATION.md](packages/fhevm-sdk/MIGRATION.md) for a step-by-step guide.
-
-**Old API** (manual instance management):
-```typescript
-const { instance } = useFhevm({ provider, chainId });
-// Pass instance everywhere...
-```
-
-**New API** (automatic lifecycle):
-```typescript
-const { instance, status } = useFhevm({ network, chainId });
-// Events and status tracking built-in!
-```
+**Migration from Legacy API:** See [MIGRATION.md](packages/fhevm-sdk/MIGRATION.md) for a step-by-step guide.
 
 ## 📋 Prerequisites
 
@@ -230,30 +151,9 @@ Compare the code and see how the new API simplifies FHEVM integration!
 
 ## 🔧 Troubleshooting
 
-### Common MetaMask + Hardhat Issues
+**Nonce Mismatch Error**: Open MetaMask → Settings → Advanced → Clear Activity Tab
 
-When developing with MetaMask and Hardhat, you may encounter these common issues:
-
-#### ❌ Nonce Mismatch Error
-
-**Problem**: MetaMask tracks transaction nonces, but when you restart Hardhat, the node resets while MetaMask doesn't update its tracking.
-
-**Solution**:
-1. Open MetaMask extension
-2. Select the Hardhat network
-3. Go to **Settings** → **Advanced**
-4. Click **"Clear Activity Tab"** (red button)
-5. This resets MetaMask's nonce tracking
-
-#### ❌ Cached View Function Results
-
-**Problem**: MetaMask caches smart contract view function results. After restarting Hardhat, you may see outdated data.
-
-**Solution**:
-1. **Restart your entire browser** (not just refresh the page)
-2. MetaMask's cache is stored in extension memory and requires a full browser restart to clear
-
-> 💡 **Pro Tip**: Always restart your browser after restarting Hardhat to avoid cache issues.
+**Cached View Results**: Restart your browser after restarting Hardhat
 
 For more details, see the [MetaMask development guide](https://docs.metamask.io/wallet/how-to/run-devnet/).
 
@@ -264,27 +164,23 @@ This template uses a monorepo structure with three main packages:
 ```
 fhevm-react-template/
 ├── packages/
-│   ├── fhevm-sdk/                 # Universal FHEVM SDK (NEW!)
+│   ├── fhevm-sdk/                 # Universal FHEVM SDK
 │   │   ├── src/
 │   │   │   ├── core/              # Framework-agnostic core
 │   │   │   ├── react/             # React hooks
 │   │   │   ├── vue/               # Vue composables
-│   │   │   ├── storage/           # Storage adapters
-│   │   │   └── internal/          # Legacy implementation
-│   │   ├── dist/                  # Build output (34 files)
-│   │   ├── README.md              # SDK documentation
-│   │   ├── CHANGELOG.md           # Version history
-│   │   └── MIGRATION.md           # Migration guide
+│   │   │   └── storage/           # Storage adapters
+│   │   └── dist/                  # Build output (58 files)
 │   ├── hardhat/                   # Smart contracts & deployment
-│   └── nextjs/                    # React frontend application
-│       ├── app/
-│       │   └── _components/
-│       │       ├── FHECounterDemoNew.tsx    # NEW API demo
-│       │       └── FHECounterDemo.tsx       # Legacy API demo
-│       └── hooks/
-│           └── fhecounter-example/
-│               ├── useFHECounterNew.tsx     # NEW API hook
-│               └── useFHECounterWagmi.tsx   # Legacy hook
+│   ├── nextjs/                    # Next.js + React demo
+│   │   ├── app/_components/
+│   │   │   ├── FHECounterDemoNew.tsx    # NEW API
+│   │   │   └── FHECounterDemo.tsx       # Legacy API
+│   │   └── hooks/fhecounter-example/
+│   └── nuxtjs/                    # Nuxt 3 + Vue demo
+│       ├── components/
+│       │   └── FHECounterDemo.vue       # Vue + FHEVM SDK
+│       └── composables/
 └── scripts/                       # Build and deployment scripts
 ```
 
@@ -309,34 +205,17 @@ fhevm-react-template/
   - `composables/useEncrypt.ts`: Encryption composable
   - `composables/useDecrypt.ts`: Decryption composable
 
-#### 🔗 Demo Components (`packages/nextjs/app/_components/`)
+#### 🔗 Demo Applications
 
-- **`FHECounterDemoNew.tsx`**: Demonstrates the new Universal SDK API
-  - Uses `useFhevm()`, `useEncrypt()`, `useDecrypt()` hooks
-  - Shows automatic lifecycle management
-  - Includes API comparison card
+**Next.js (`packages/nextjs/`)**:
+- **`FHECounterDemoNew.tsx`**: NEW API with `useFhevm()`, `useEncrypt()`, `useDecrypt()`
+- **`FHECounterDemo.tsx`**: Legacy API (for comparison)
+- Uses RainbowKit for wallet connection
 
-- **`FHECounterDemo.tsx`**: Original implementation (legacy)
-  - Kept for comparison and backward compatibility
-  - Uses manual instance management
-
-#### 🎣 Custom Hooks (`packages/nextjs/hooks/fhecounter-example/`)
-
-- **`useFHECounterNew.tsx`**: FHE Counter hook using NEW API
-  - Clean, concise implementation
-  - Automatic client lifecycle
-  - Builder pattern encryption
-
-- **`useFHECounterWagmi.tsx`**: Original implementation (legacy)
-  - Manual instance management
-  - Complex encryption setup
-
-#### 🔧 Flexibility
-
-- Replace `ethers.js` with `Wagmi` or other React-friendly libraries
-- Modular architecture for easy customization
-- Support for multiple wallet providers
-- Framework-agnostic core works with any frontend
+**Nuxt (`packages/nuxtjs/`)**:
+- **`FHECounterDemo.vue`**: Vue 3 Composition API with FHEVM SDK
+- Uses Wagmi Vue composables
+- DaisyUI components for styling
 
 ## 📚 SDK Documentation
 
@@ -379,34 +258,6 @@ For detailed SDK documentation, see:
 ### Community & Support
 - [FHEVM Discord](https://discord.com/invite/zama) - Community support
 - [GitHub Issues](https://github.com/zama-ai/fhevm-react-template/issues) - Bug reports & feature requests
-
-## 🎯 What's New in v0.1.0
-
-### Universal FHEVM SDK
-
-✨ **New Features:**
-- Framework-agnostic core architecture
-- React hooks: `useFhevm()`, `useEncrypt()`, `useDecrypt()`
-- Vue composables: `useFhevm()`, `useEncrypt()`, `useDecrypt()`
-- Event-driven client lifecycle management
-- Builder pattern for type-safe encryption
-- Automatic signature management and caching
-- Staleness detection for decryption
-- Multiple export paths for optimal tree-shaking
-
-🔧 **Improvements:**
-- 100% backward compatible with legacy API
-- Zero breaking changes - old code still works
-- Better TypeScript support and IntelliSense
-- Cleaner, more maintainable code
-- Reduced boilerplate by ~60%
-
-📦 **Build Artifacts:**
-- 34 total files (.js + .d.ts)
-- Core: 14 files
-- React: 8 files
-- Vue: 8 files
-- Storage & utilities: 4 files
 
 ## 📄 License
 

@@ -224,12 +224,13 @@ When submitting to Zama bounty program, include:
 - ✅ Universal FHEVM SDK (Framework-agnostic core)
 - ✅ React hooks (`useFhevm`, `useEncrypt`, `useDecrypt`)
 - ✅ Vue composables (`useFhevm`, `useEncrypt`, `useDecrypt`)
-- ✅ Side-by-side NEW vs Legacy API comparison
+- ✅ Next.js demo (React) with API comparison
+- ✅ Nuxt demo (Vue 3 Composition API)
 - ✅ Event-driven architecture
 - ✅ Builder pattern encryption
 - ✅ Automatic signature management
 - ✅ TypeScript full support
-- ✅ 34 build artifacts (Core + React + Vue)
+- ✅ 58 build artifacts (Core + React + Vue)
 
 ## 🚨 Common Issues
 
