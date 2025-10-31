@@ -7,10 +7,24 @@ import type { FhevmInstance } from "../fhevmTypes";
 import type { EncryptionResult } from "./types";
 import type { RelayerEncryptedInput } from "@zama-fhe/relayer-sdk/web";
 
+export type RelayerEncryptedInputMethod =
+  | "addBool"
+  | "add8"
+  | "add16"
+  | "add32"
+  | "add64"
+  | "add128"
+  | "add256"
+  | "addAddress";
+
+const DEFAULT_ENCRYPTION_METHOD: RelayerEncryptedInputMethod = "add64";
+
 /**
  * Map external encrypted integer type to RelayerEncryptedInput builder method
  */
-export function getEncryptionMethod(internalType: string): string {
+export function getEncryptionMethod(
+  internalType: string,
+): RelayerEncryptedInputMethod {
   switch (internalType) {
     case "externalEbool":
       return "addBool";
@@ -29,8 +43,10 @@ export function getEncryptionMethod(internalType: string): string {
     case "externalEaddress":
       return "addAddress";
     default:
-      console.warn(`Unknown internalType: ${internalType}, defaulting to add64`);
-      return "add64";
+      console.warn(
+        `Unknown internalType: ${internalType}, defaulting to add64`,
+      );
+      return DEFAULT_ENCRYPTION_METHOD;
   }
 }
 
@@ -51,9 +67,11 @@ export function toHex(value: Uint8Array | string): `0x${string}` {
 export function buildParamsFromAbi(
   enc: EncryptionResult,
   abi: any[],
-  functionName: string
+  functionName: string,
 ): any[] {
-  const fn = abi.find((item: any) => item.type === "function" && item.name === functionName);
+  const fn = abi.find(
+    (item: any) => item.type === "function" && item.name === functionName,
+  );
   if (!fn) throw new Error(`Function ABI not found for ${functionName}`);
 
   return fn.inputs.map((input: any, index: number) => {
@@ -102,11 +120,29 @@ export async function createEncryptedInput(
   instance: FhevmInstance,
   contractAddress: string,
   userAddress: string,
-  buildFn: (builder: RelayerEncryptedInput) => void
+  buildFn: (builder: RelayerEncryptedInput) => void,
 ): Promise<EncryptionResult> {
-  const input = instance.createEncryptedInput(contractAddress, userAddress) as RelayerEncryptedInput;
-  buildFn(input);
-  const enc = await input.encrypt();
+  const unwrap = <T>(value: T): T => {
+    let current: any = value;
+    while (
+      current &&
+      typeof current === "object" &&
+      "__v_raw" in current &&
+      current.__v_raw !== current
+    ) {
+      current = current.__v_raw;
+    }
+    return (current ?? value) as T;
+  };
+
+  const rawInstance = unwrap(instance) as FhevmInstance;
+  const input = rawInstance.createEncryptedInput(
+    contractAddress,
+    userAddress,
+  ) as RelayerEncryptedInput;
+  const rawInput = unwrap(input);
+  buildFn(rawInput);
+  const enc = await rawInput.encrypt();
   return {
     handles: enc.handles,
     inputProof: enc.inputProof,

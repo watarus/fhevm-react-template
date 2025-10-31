@@ -32,9 +32,11 @@
     }
   },
   "scripts": {
+    "dev": "pnpm run watch",
     "build": "tsc -p tsconfig.json",
     "watch": "tsc -p tsconfig.json --watch",
     "clean": "rm -rf dist",
+    "format": "prettier --write \"src/**/*.{js,ts,tsx,jsx,json}\"",
     "test": "vitest run --coverage",
     "test:watch": "vitest"
   },

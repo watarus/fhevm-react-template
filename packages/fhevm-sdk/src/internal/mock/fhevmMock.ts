@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //
 // WARNING!!
-// ALWAY USE DYNAMICALLY IMPORT THIS FILE TO AVOID INCLUDING THE ENTIRE 
+// ALWAY USE DYNAMICALLY IMPORT THIS FILE TO AVOID INCLUDING THE ENTIRE
 // FHEVM MOCK LIB IN THE FINAL PRODUCTION BUNDLE!!
 //
 //////////////////////////////////////////////////////////////////////////
@@ -34,5 +34,16 @@ export const fhevmMockCreateInstance = async (parameters: {
     verifyingContractAddressInputVerification:
       "0x812b06e1CDCE800494b79fFE4f925A504a9A9810",
   });
+  // Bind instance methods to avoid Proxy wrappers breaking private fields access
+  if (
+    instance &&
+    typeof instance === "object" &&
+    "createEncryptedInput" in instance &&
+    typeof (instance as any).createEncryptedInput === "function"
+  ) {
+    (instance as any).createEncryptedInput = (instance as any).createEncryptedInput.bind(
+      instance,
+    );
+  }
   return instance;
 };

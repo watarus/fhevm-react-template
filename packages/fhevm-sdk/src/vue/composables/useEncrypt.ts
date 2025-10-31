@@ -4,13 +4,14 @@
  * Provides encryption functionality with builder pattern
  */
 
-import { computed, type Ref, type ComputedRef } from 'vue';
-import { createEncryptedInput } from '../../core/encryption';
-import type { FhevmInstance } from '../../fhevmTypes';
-import type { EncryptionResult } from '../../core/types';
+import type { BrowserProvider } from "ethers";
+import { computed, toRaw, unref, type ComputedRef, type Ref } from "vue";
+import { createEncryptedInput } from "../../core/encryption";
+import type { EncryptionResult } from "../../core/types";
+import type { FhevmInstance } from "../../fhevmTypes";
 
 // Import RelayerEncryptedInput type from relayer-sdk
-import type { RelayerEncryptedInput } from '@zama-fhe/relayer-sdk/web';
+import type { RelayerEncryptedInput } from "@zama-fhe/relayer-sdk/web";
 
 export interface UseEncryptParams {
   /**
@@ -19,9 +20,9 @@ export interface UseEncryptParams {
   instance: Ref<FhevmInstance | undefined>;
 
   /**
-   * Ethers signer
+   * Ethers BrowserProvider - will call getSigner() internally
    */
-  signer: any; // ethers.JsonRpcSigner
+  signer: BrowserProvider | Ref<BrowserProvider | undefined> | undefined;
 
   /**
    * Contract address
@@ -49,7 +50,9 @@ export interface UseEncryptResult {
    * });
    * ```
    */
-  encrypt: (buildFn: (builder: RelayerEncryptedInput) => void) => Promise<EncryptionResult | undefined>;
+  encrypt: (
+    buildFn: (builder: RelayerEncryptedInput) => void,
+  ) => Promise<EncryptionResult | undefined>;
 }
 
 /**
@@ -82,16 +85,29 @@ export function useEncrypt(params: UseEncryptParams): UseEncryptResult {
   const { instance, signer, contractAddress } = params;
 
   const canEncrypt = computed(() => {
-    return Boolean(instance.value && signer && contractAddress);
+    const resolvedInstance = instance.value && toRaw(instance.value);
+    const resolvedSigner = signer ? toRaw(unref(signer)) : undefined;
+    return Boolean(resolvedInstance && resolvedSigner && contractAddress);
   });
 
-  const encrypt = async (buildFn: (builder: RelayerEncryptedInput) => void): Promise<EncryptionResult | undefined> => {
-    if (!instance.value || !signer || !contractAddress) {
+  const encrypt = async (
+    buildFn: (builder: RelayerEncryptedInput) => void,
+  ): Promise<EncryptionResult | undefined> => {
+    const resolvedInstance = instance.value && toRaw(instance.value);
+    const resolvedSigner = signer ? toRaw(unref(signer)) : undefined;
+    if (!resolvedInstance || !resolvedSigner || !contractAddress) {
       return undefined;
     }
 
-    const userAddress = await signer.getAddress();
-    return createEncryptedInput(instance.value, contractAddress, userAddress, buildFn);
+    // Get the actual signer from the BrowserProvider (already protected by markRaw)
+    const actualSigner = await resolvedSigner.getSigner();
+    const userAddress = await actualSigner.getAddress();
+    return createEncryptedInput(
+      resolvedInstance,
+      contractAddress,
+      userAddress,
+      buildFn,
+    );
   };
 
   return {
